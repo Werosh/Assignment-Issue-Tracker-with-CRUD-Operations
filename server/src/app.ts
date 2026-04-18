@@ -27,6 +27,14 @@ export function createApp(env: Env) {
     res.json({ ok: true });
   });
 
+  app.get("/", (_req, res) => {
+    res.type("application/json").json({
+      name: "Issue Tracker API",
+      hint: "Open the web app at " + env.CLIENT_ORIGIN + " (not this port). This server only exposes /api and /health.",
+      health: "/health",
+    });
+  });
+
   app.use("/api/auth", authRoutes(authController, env.JWT_SECRET));
   app.use("/api/issues", issueRoutes(issueController, env.JWT_SECRET));
 
