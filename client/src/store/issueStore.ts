@@ -159,12 +159,52 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
   },
 
   updateIssue: async (id, patch) => {
-    const issue = await issuesApi.updateIssue(id, patch);
-    await Promise.all([get().refreshIssuesSilently(), get().loadStats()]);
-    set((s) => ({
-      selectedIssue: s.selectedIssue?.id === id ? issue : s.selectedIssue,
-    }));
-    return issue;
+    const prevList = get().list;
+    const prevIssue = prevList?.items.find((i) => i.id === id);
+    const prevSelected = get().selectedIssue;
+
+    if (prevList && prevIssue) {
+      set({
+        list: {
+          ...prevList,
+          items: prevList.items.map((i) => (i.id === id ? { ...i, ...patch } : i)),
+        },
+      });
+    }
+    if (prevSelected?.id === id) {
+      set({ selectedIssue: { ...prevSelected, ...patch } });
+    }
+
+    try {
+      const issue = await issuesApi.updateIssue(id, patch);
+      await get().loadStats();
+      set((s) => {
+        const list = s.list;
+        const nextSelected = s.selectedIssue?.id === id ? issue : s.selectedIssue;
+        if (!list) {
+          return { selectedIssue: nextSelected };
+        }
+        const hasItem = list.items.some((i) => i.id === id);
+        return {
+          list: hasItem ? { ...list, items: list.items.map((i) => (i.id === id ? issue : i)) } : list,
+          selectedIssue: nextSelected,
+        };
+      });
+      return issue;
+    } catch (e) {
+      if (prevList && prevIssue) {
+        set({
+          list: {
+            ...prevList,
+            items: prevList.items.map((i) => (i.id === id ? prevIssue : i)),
+          },
+        });
+      }
+      if (prevSelected?.id === id) {
+        set({ selectedIssue: prevSelected });
+      }
+      throw e;
+    }
   },
 
   deleteIssue: async (id) => {
