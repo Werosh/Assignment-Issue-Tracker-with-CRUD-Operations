@@ -10,7 +10,12 @@ import {
 import { useMemo, useState } from "react";
 import type { To } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
-import type { Issue, IssuePriority, IssueSeverity, IssueStatus } from "../../types/issue";
+import type {
+  Issue,
+  IssuePriority,
+  IssueSeverity,
+  IssueStatus,
+} from "../../types/issue";
 import { cn } from "../../lib/cn";
 import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 
@@ -43,7 +48,7 @@ const SEVERITY_LABEL: Record<IssueSeverity, string> = {
 };
 
 function formatShortDate(iso?: string) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Intl.DateTimeFormat(undefined, {
       month: "short",
@@ -51,7 +56,7 @@ function formatShortDate(iso?: string) {
       year: "numeric",
     }).format(new Date(iso));
   } catch {
-    return "—";
+    return "-";
   }
 }
 
@@ -199,7 +204,10 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
             </div>
 
             {expanded ? (
-              <div id={id} className="app-scroll overflow-x-auto [-webkit-overflow-scrolling:touch]">
+              <div
+                id={id}
+                className="app-scroll overflow-x-auto [-webkit-overflow-scrolling:touch]"
+              >
                 <table className="w-full min-w-[640px] border-collapse text-left text-[0.85rem] sm:text-[0.9rem]">
                   <thead>
                     <tr className="border-b border-border/80 bg-surface-950/80 text-[0.65rem] font-semibold uppercase tracking-wider text-muted sm:text-[0.7rem]">

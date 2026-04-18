@@ -28,14 +28,18 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  /* Scrollbars — match surfaces + subtle accent on interaction */
+  /* Scrollbars - match surfaces + subtle accent on interaction */
   --scrollbar-track: #1c1c1c;
   --scrollbar-thumb: #333333;
-  --scrollbar-thumb-hover: color-mix(in oklab, var(--color-accent) 28%, #3a3a3a);
+  --scrollbar-thumb-hover: color-mix(
+    in oklab,
+    var(--color-accent) 28%,
+    #3a3a3a
+  );
 }
 
 @layer base {
-  /* Single app shell — no document scroll (avoids full-height scrollbar beside the header). */
+  /* Single app shell - no document scroll (avoids full-height scrollbar beside the header). */
   html {
     @apply h-full overflow-hidden scroll-smooth;
   }
@@ -43,8 +47,16 @@
   body {
     @apply h-full min-h-0 overflow-hidden bg-surface-950 font-sans text-foreground antialiased;
     background-image:
-      radial-gradient(1200px 800px at 10% -10%, rgb(140 255 46 / 0.12) 0%, transparent 55%),
-      radial-gradient(900px 600px at 100% 0%, rgb(140 255 46 / 0.08) 0%, transparent 50%);
+      radial-gradient(
+        1200px 800px at 10% -10%,
+        rgb(140 255 46 / 0.12) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        900px 600px at 100% 0%,
+        rgb(140 255 46 / 0.08) 0%,
+        transparent 50%
+      );
   }
 
   #root {

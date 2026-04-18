@@ -40,7 +40,7 @@ Do not commit real `.env` files or paste secrets into the repo. Rotate anything 
 
 Passwords are hashed with bcrypt on register; the API never stores plain text. Requests that touch issues send a Bearer JWT; the server verifies it with `JWT_SECRET` only on the server. Helmet adds sensible headers, CORS is locked to `CLIENT_ORIGIN`, and JSON bodies are capped. Each issue belongs to `createdBy`, so users only see their own rows.
 
-The SPA keeps the token in `localStorage` to keep the stack simple. Use HTTPS in production; locking down token theft for real products usually means shorter-lived tokens, refresh, or httpOnly cookies—out of scope here but worth knowing.
+The SPA keeps the token in `localStorage` to keep the stack simple. Use HTTPS in production; locking down token theft for real products usually means shorter-lived tokens, refresh, or httpOnly cookies out of scope here but worth knowing.
 
 ## Run locally
 
@@ -54,7 +54,7 @@ That runs Express (API on port 5000 by default) and Vite together. Open the app 
 
 Register, then log in. Everything under Issues is per account.
 
-Create issues from the main screen (title, description, status, priority, severity). Open one from the list or board to see the detail modal; use Edit for the full-page form. List view groups cards by status and loads more as you scroll. Board view loads all matching issues for the current filters and lets you drag cards between columns—dropping onto Resolved or Closed opens a confirm dialog, same as changing those statuses in the modal or on the edit page.
+Create issues from the main screen (title, description, status, priority, severity). Open one from the list or board to see the detail modal; use Edit for the full-page form. List view groups cards by status and loads more as you scroll. Board view loads all matching issues for the current filters and lets you drag cards between columns dropping onto Resolved or Closed opens a confirm dialog, same as changing those statuses in the modal or on the edit page.
 
 Search debounces so typing does not spam the API. Filters (status, priority, severity) live behind the filter button. Status counts at the bottom of the header update from `/api/issues/stats`. Export CSV or JSON uses whatever search and filters are active. Sign out is in the header.
 
@@ -65,15 +65,15 @@ npm run build
 npm run start
 ```
 
-`npm run build` compiles the server TypeScript and builds the client bundle into `client/dist`. `npm run start` runs the compiled API only—you still need to serve `client/dist` as static files (nginx, S3+CloudFront, etc.) and reverse-proxy `/api` to Node. Set the same env vars on the host and keep HTTPS at the edge.
+`npm run build` compiles the server TypeScript and builds the client bundle into `client/dist`. `npm run start` runs the compiled API only you still need to serve `client/dist` as static files (nginx, S3+CloudFront, etc.) and reverse-proxy `/api` to Node. Set the same env vars on the host and keep HTTPS at the edge.
 
 ## Scripts recap
 
-`npm run dev` — both processes for day-to-day coding.
+`npm run dev` - both processes for day-to-day coding.
 
-`npm run build` — production artifacts for client + server.
+`npm run build` - production artifacts for client + server.
 
-`npm run start` — API from compiled `server` output after a build.
+`npm run start` - API from compiled `server` output after a build.
 
 ## Repo layout
 
