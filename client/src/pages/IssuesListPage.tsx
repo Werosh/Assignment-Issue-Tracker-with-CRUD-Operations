@@ -4,7 +4,9 @@ import {
   Archive,
   CheckCircle2,
   CircleDot,
+  Columns3,
   FileJson,
+  LayoutList,
   Loader2,
   Plus,
   Search,
@@ -25,6 +27,7 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import * as issuesApi from "../api/issues";
 import { useIssueStore } from "../store/issueStore";
 import { cn } from "../lib/cn";
+import { IssueBoard } from "../components/issues/IssueBoard";
 
 function StatCard({
   label,
@@ -58,10 +61,13 @@ export function IssuesListPage() {
   const statsLoading = useIssueStore((s) => s.statsLoading);
   const error = useIssueStore((s) => s.error);
   const loadIssues = useIssueStore((s) => s.loadIssues);
+  const loadBoardIssues = useIssueStore((s) => s.loadBoardIssues);
   const loadStats = useIssueStore((s) => s.loadStats);
+  const updateIssue = useIssueStore((s) => s.updateIssue);
 
   const [qInput, setQInput] = useState(filters.q);
   const debouncedQ = useDebouncedValue(qInput, 320);
+  const [view, setView] = useState<"list" | "board">("list");
 
   useEffect(() => {
     loadStats();
@@ -72,8 +78,22 @@ export function IssuesListPage() {
   }, [debouncedQ, setFilters]);
 
   useEffect(() => {
-    void loadIssues();
-  }, [loadIssues, filters.page, filters.limit, filters.q, filters.status, filters.priority, filters.severity]);
+    if (view === "board") {
+      void loadBoardIssues();
+    } else {
+      void loadIssues();
+    }
+  }, [
+    view,
+    loadIssues,
+    loadBoardIssues,
+    filters.page,
+    filters.limit,
+    filters.q,
+    filters.status,
+    filters.priority,
+    filters.severity,
+  ]);
 
   const exportDisabled = loading || statsLoading;
 
@@ -90,9 +110,37 @@ export function IssuesListPage() {
   return (
     <Page
       title="Issues"
-      subtitle="Create, filter, and triage work in one place. Search pauses briefly while you type so the API is not called on every keystroke."
+      subtitle={
+        view === "board"
+          ? "Board view: drag cards by the handle to move between columns. Up to 200 issues load; search and filters still apply."
+          : "Create, filter, and triage work in one place. Search pauses briefly while you type so the API is not called on every keystroke."
+      }
       actions={
         <>
+          <div className="flex rounded-lg border border-border bg-surface-900 p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("list")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                view === "list" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+              )}
+            >
+              <LayoutList className="size-4" aria-hidden />
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("board")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                view === "board" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+              )}
+            >
+              <Columns3 className="size-4" aria-hidden />
+              Board
+            </button>
+          </div>
           <Button
             variant="secondary"
             type="button"
@@ -146,6 +194,7 @@ export function IssuesListPage() {
               value={filters.status}
               onChange={(e) => setFilters({ status: e.target.value })}
               aria-label="Filter by status"
+              disabled={view === "board"}
             >
               <option value="">All statuses</option>
               <option value="open">Open</option>
@@ -153,6 +202,9 @@ export function IssuesListPage() {
               <option value="resolved">Resolved</option>
               <option value="closed">Closed</option>
             </Select>
+            {view === "board" ? (
+              <p className="mt-1.5 text-xs text-muted">Status filter is off in board view; use columns instead.</p>
+            ) : null}
           </Field>
           <Field label="Priority">
             <Select
@@ -200,37 +252,50 @@ export function IssuesListPage() {
         </div>
       ) : null}
 
-      {!loading && list && list.items.length === 0 ? (
+      {!loading && list && list.items.length === 0 && view === "list" ? (
         <p className="text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
       ) : null}
 
-      <ul className="mt-4 grid list-none gap-3 p-0">
-        {list?.items.map((issue) => (
-          <li key={issue.id}>
-            <Link
-              to={`/issues/${issue.id}`}
-              className="group block rounded-xl border border-border/90 bg-surface-850/50 p-4 no-underline shadow-sm transition-all hover:border-accent/40 hover:bg-surface-850 hover:shadow-md"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-white">
-                  {issue.title}
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  <StatusBadge status={issue.status} />
-                  <PriorityBadge priority={issue.priority} />
-                </div>
-              </div>
-              <p className="mt-2 line-clamp-2 text-[0.92rem] leading-relaxed text-muted">{issue.description}</p>
-              <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-accent/90 opacity-0 transition-opacity group-hover:opacity-100">
-                <FileJson className="size-3.5" aria-hidden />
-                View details
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {!loading && list && view === "board" ? (
+        <div className="mt-4">
+          <IssueBoard
+            issues={list.items}
+            onStatusChange={async (issueId, status) => {
+              await updateIssue(issueId, { status });
+            }}
+          />
+        </div>
+      ) : null}
 
-      {list && list.totalPages > 1 ? (
+      {view === "list" ? (
+        <ul className="mt-4 grid list-none gap-3 p-0">
+          {list?.items.map((issue) => (
+            <li key={issue.id}>
+              <Link
+                to={`/issues/${issue.id}`}
+                className="group block rounded-xl border border-border/90 bg-surface-850/50 p-4 no-underline shadow-sm transition-all hover:border-accent/40 hover:bg-surface-850 hover:shadow-md"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-white">
+                    {issue.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    <StatusBadge status={issue.status} />
+                    <PriorityBadge priority={issue.priority} />
+                  </div>
+                </div>
+                <p className="mt-2 line-clamp-2 text-[0.92rem] leading-relaxed text-muted">{issue.description}</p>
+                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-accent/90 opacity-0 transition-opacity group-hover:opacity-100">
+                  <FileJson className="size-3.5" aria-hidden />
+                  View details
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {view === "list" && list && list.totalPages > 1 ? (
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
           <Button
             variant="secondary"
@@ -253,6 +318,10 @@ export function IssuesListPage() {
             Next
           </Button>
         </div>
+      ) : null}
+
+      {view === "board" && list && list.total > 200 ? (
+        <p className="mt-4 text-xs text-muted">Showing the first 200 issues for the board. Refine search or switch to list view for pagination.</p>
       ) : null}
     </Page>
   );

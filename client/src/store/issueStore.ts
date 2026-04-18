@@ -22,6 +22,8 @@ interface IssueStoreState {
   setFilters: (patch: Partial<FilterState>) => void;
   loadStats: () => Promise<void>;
   loadIssues: () => Promise<void>;
+  /** Loads up to 200 issues across all statuses (for Kanban board). Respects search, priority, severity; ignores status filter and pagination. */
+  loadBoardIssues: () => Promise<void>;
   loadIssue: (id: string) => Promise<Issue>;
   createIssue: (input: Parameters<typeof issuesApi.createIssue>[0]) => Promise<Issue>;
   updateIssue: (id: string, patch: Partial<Issue>) => Promise<Issue>;
@@ -74,6 +76,24 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
         limit: f.limit,
         q: f.q || undefined,
         status: f.status || undefined,
+        priority: f.priority || undefined,
+        severity: f.severity || undefined,
+      });
+      set({ list, loading: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load issues";
+      set({ loading: false, error: msg });
+    }
+  },
+
+  loadBoardIssues: async () => {
+    set({ loading: true, error: null });
+    const f = get().filters;
+    try {
+      const list = await issuesApi.listIssues({
+        page: 1,
+        limit: 200,
+        q: f.q || undefined,
         priority: f.priority || undefined,
         severity: f.severity || undefined,
       });
