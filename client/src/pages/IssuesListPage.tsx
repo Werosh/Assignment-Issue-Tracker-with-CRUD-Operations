@@ -5,22 +5,18 @@ import {
   CheckCircle2,
   CircleDot,
   Columns3,
+  Filter,
   LayoutList,
   Loader2,
   Plus,
-  Search,
-  SlidersHorizontal,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { IssueFiltersModal } from "../components/IssueFiltersModal";
 import { Page } from "../components/Page";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
-import { Field } from "../components/ui/Field";
-import { Input } from "../components/ui/Input";
-import { Select } from "../components/ui/Select";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import * as issuesApi from "../api/issues";
 import { useIssueStore } from "../store/issueStore";
@@ -41,13 +37,15 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <Card className="group flex min-w-0 flex-col gap-1 p-4 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[0.75rem] font-medium uppercase tracking-wider text-muted">{label}</span>
-        <Icon className={cn("size-4 opacity-70 transition-opacity group-hover:opacity-100", accentClass)} aria-hidden />
+    <div className="group flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-surface-850/50 px-2.5 py-2 transition-colors hover:border-border hover:bg-surface-850/80 sm:gap-2.5 sm:px-3 sm:py-2">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-surface-900/80">
+        <Icon className={cn("size-3.5", accentClass)} aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[0.6rem] font-semibold uppercase tracking-wider text-muted">{label}</div>
+        <div className={cn("text-lg font-bold tabular-nums leading-none sm:text-xl", accentClass)}>{value}</div>
       </div>
-      <span className={cn("text-3xl font-bold tabular-nums tracking-tight", accentClass)}>{value}</span>
-    </Card>
+    </div>
   );
 }
 
@@ -74,6 +72,16 @@ export function IssuesListPage() {
   const [qInput, setQInput] = useState(filters.q);
   const debouncedQ = useDebouncedValue(qInput, 320);
   const [view, setView] = useState<"list" | "board">("list");
+  const [filtersModalOpen, setFiltersModalOpen] = useState(false);
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (qInput.trim()) n += 1;
+    if (filters.status) n += 1;
+    if (filters.priority) n += 1;
+    if (filters.severity) n += 1;
+    return n;
+  }, [qInput, filters.status, filters.priority, filters.severity]);
 
   useEffect(() => {
     setIssuesView(view);
@@ -128,29 +136,49 @@ export function IssuesListPage() {
       }
       actions={
         <>
-          <div className="flex rounded-lg border border-border bg-surface-900 p-0.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <button
               type="button"
-              onClick={() => setView("list")}
+              onClick={() => setFiltersModalOpen(true)}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                view === "list" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                "relative flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-900 text-muted transition-colors hover:border-accent/35 hover:bg-surface-800 hover:text-foreground",
+                activeFilterCount > 0 && "border-accent/25 text-accent"
               )}
+              aria-label={
+                activeFilterCount > 0 ? `Open filters, ${activeFilterCount} active` : "Open filters"
+              }
             >
-              <LayoutList className="size-4" aria-hidden />
-              List
+              <Filter className="size-[1.15rem]" strokeWidth={2.25} aria-hidden />
+              {activeFilterCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[0.6rem] font-bold leading-none text-on-accent">
+                  {activeFilterCount}
+                </span>
+              ) : null}
             </button>
-            <button
-              type="button"
-              onClick={() => setView("board")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                view === "board" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
-              )}
-            >
-              <Columns3 className="size-4" aria-hidden />
-              Board
-            </button>
+            <div className="flex rounded-lg border border-border bg-surface-900 p-0.5">
+              <button
+                type="button"
+                onClick={() => setView("list")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  view === "list" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                )}
+              >
+                <LayoutList className="size-4" aria-hidden />
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("board")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  view === "board" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                )}
+              >
+                <Columns3 className="size-4" aria-hidden />
+                Board
+              </button>
+            </div>
           </div>
           <Button
             variant="secondary"
@@ -179,76 +207,12 @@ export function IssuesListPage() {
         </>
       }
     >
-      <section className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="mb-4 grid grid-cols-2 gap-2 sm:mb-5 sm:grid-cols-4 sm:gap-2.5">
         <StatCard label="Open" value={stats?.open ?? 0} accentClass="text-accent" icon={CircleDot} />
         <StatCard label="In progress" value={stats?.in_progress ?? 0} accentClass="text-foreground" icon={Activity} />
         <StatCard label="Resolved" value={stats?.resolved ?? 0} accentClass="text-[#b8ff6a]" icon={CheckCircle2} />
         <StatCard label="Closed" value={stats?.closed ?? 0} accentClass="text-muted" icon={Archive} />
       </section>
-
-      <Card className="mb-6 p-4 sm:p-5">
-        <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted">
-          <SlidersHorizontal className="size-4" aria-hidden />
-          Filters
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Field label="Search title or description" icon={Search}>
-            <Input
-              value={qInput}
-              onChange={(e) => setQInput(e.target.value)}
-              placeholder="Keywords…"
-              aria-label="Search issues"
-            />
-          </Field>
-          <Field label="Status">
-            <Select
-              value={filters.status}
-              onChange={(e) => setFilters({ status: e.target.value })}
-              aria-label="Filter by status"
-              disabled={view === "board"}
-            >
-              <option value="">All statuses</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </Select>
-            {view === "board" ? (
-              <p className="mt-1.5 text-xs text-muted">Status filter is off in board view; use columns instead.</p>
-            ) : !filters.status ? (
-              <p className="mt-1.5 text-xs text-muted">
-                All statuses shown in separate groups (up to 200 issues). Choose a status to filter the API and enable page navigation.
-              </p>
-            ) : null}
-          </Field>
-          <Field label="Priority">
-            <Select
-              value={filters.priority}
-              onChange={(e) => setFilters({ priority: e.target.value })}
-              aria-label="Filter by priority"
-            >
-              <option value="">All priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </Select>
-          </Field>
-          <Field label="Severity">
-            <Select
-              value={filters.severity}
-              onChange={(e) => setFilters({ severity: e.target.value })}
-              aria-label="Filter by severity"
-            >
-              <option value="">All severities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </Select>
-          </Field>
-        </div>
-      </Card>
 
       {error ? (
         <div
@@ -324,6 +288,17 @@ export function IssuesListPage() {
       ) : null}
     </Page>
     <NewIssueModal open={isNewIssueModal} onClose={closeNewIssueModal} />
+    <IssueFiltersModal
+      open={filtersModalOpen}
+      onClose={() => setFiltersModalOpen(false)}
+      view={view}
+      qInput={qInput}
+      onQInputChange={setQInput}
+      status={filters.status}
+      priority={filters.priority}
+      severity={filters.severity}
+      setFilters={setFilters}
+    />
     </>
   );
 }
