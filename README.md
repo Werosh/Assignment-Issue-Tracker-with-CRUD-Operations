@@ -1,77 +1,98 @@
 # Issue Tracker
 
-A full-stack issue tracker with CRUD operations, auth, filters, pagination, and exports. The stack is React (TypeScript), Express, MongoDB, and JWT-based authentication.
+**Assignment: Associate Software Engineer (Frontend)**
+
+Full stack issue tracker: React and TypeScript on the client (Vite, Zustand, React Router, Tailwind), Express and MongoDB on the server. Features include JWT authentication, per user issue data, list and board views, debounced search, filters, and CSV or JSON export. The database target is **MongoDB Atlas** using a standard connection string.
 
 ## Prerequisites
 
-- Node.js 20 or newer
-- A running MongoDB instance (local or Atlas)
+- Node.js 20 or later
+- A MongoDB Atlas cluster (free tier is sufficient) with a database user and network access rules configured
 
-## Setup
+## Install
 
-1. Clone or extract the project and install dependencies from the repository root:
+From the repository root (npm workspaces install both `client` and `server`):
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. Configure the API. Copy `server/.env.example` to `server/.env` and set values:
+Main dependencies: see `client/package.json` and `server/package.json` for exact versions. In summary, the client uses React, Vite, TypeScript, Zustand, Tailwind, Framer Motion, and dnd-kit. The server uses Express, Mongoose, Zod, jose (JWT), bcryptjs, Helmet, and CORS.
 
-   - `MONGODB_URI`: connection string (for example `mongodb://127.0.0.1:27017/issue-tracker`)
-   - `JWT_SECRET`: at least 16 characters in production
-   - `CLIENT_ORIGIN`: frontend URL (default `http://localhost:5173`)
-   - `PORT`: API port (default `5000`)
+## MongoDB Atlas
 
-3. Start both the API and the Vite dev server:
+Create a cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Under **Database Access**, create a user with a strong password. Under **Network Access**, restrict to your IP for development; avoid open `0.0.0.0/0` rules in production unless you understand the tradeoff. Use **Connect** then **Drivers** to copy the `mongodb+srv://` URI. Substitute username, password, and database name. Percent encode special characters in the password if required.
 
-   ```bash
-   npm run dev
-   ```
+## Environment variables
 
-   - API: `http://localhost:5000`
-   - App: `http://localhost:5173` (proxies `/api` to the API)
+Copy `server/.env.example` to `server/.env` and set:
 
-4. Register an account via the UI, then create and manage issues.
+| Variable        | Purpose                                                                                        |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `MONGODB_URI`   | Atlas connection string (TLS is used by `mongodb+srv`)                                         |
+| `JWT_SECRET`    | Secret key for signing tokens; must be long and random in any shared or production environment |
+| `CLIENT_ORIGIN` | Allowed browser origin for CORS (default `http://localhost:5173`)                              |
+| `PORT`          | API listen port (default `5000`)                                                               |
+
+Never commit `server/.env` or share real secrets in the repository. Keep `.env` out of version control and rotate credentials if they are exposed.
+
+## Security
+
+This project applies common practices suitable for a coursework submission. Reviewers should note the following:
+
+**Server**
+
+- Passwords are never stored in plain text. Registration hashes passwords with **bcrypt** before persistence.
+- **JWT** access tokens authenticate API requests. The signing key is `JWT_SECRET` only on the server.
+- **Helmet** sets sensible HTTP security headers.
+- **CORS** allows only `CLIENT_ORIGIN`. Set this to your deployed frontend URL in production.
+- Request bodies are size limited (`express.json` limit).
+- Issue routes enforce ownership: each user can only read, update, or delete their own issues.
+
+**Configuration**
+
+- Treat `JWT_SECRET` and `MONGODB_URI` like production secrets: high entropy for the JWT secret, and database credentials with least privilege (Atlas user scoped to this application).
+- In production, serve the API and SPA over **HTTPS**, set `CLIENT_ORIGIN` to the real frontend origin, and tighten Atlas **Network Access** to known IPs or cloud provider ranges where possible.
+
+**Client**
+
+- The session token is stored in **localStorage** for simplicity. In production, always serve the app over HTTPS to reduce exposure on untrusted networks. Mitigating token theft fully would require additional measures (short lived tokens, refresh flow, httpOnly cookies) beyond this assignment scope.
+
+## Run (development)
+
+```bash
+npm run dev
+```
+
+- Web app: `http://localhost:5173`
+- API: `http://localhost:5000` (Vite proxies `/api` to the API during development)
+
+## Using the application
+
+Register or sign in. Issues are isolated per account. Create issues from the main screen; open details in a modal or use the edit page. Switch between list view (grouped by status, infinite scroll) and board view (drag and drop). Changing status to Resolved or Closed prompts for confirmation. Filters for status, priority, and severity are available from the filter control. Export CSV or JSON respects current search and filters. Sign out from the header.
 
 ## Production build
 
 ```bash
 npm run build
+npm run start
 ```
 
-Run the API with `npm run start -w server` after building (expects `server/.env`). Serve `client/dist` as static files from any web server, or use Vite preview for testing:
-
-```bash
-npm run preview -w client
-```
-
-Point the client at the API by serving the SPA and forwarding `/api` to the Express server, or set a reverse proxy so `/api` reaches the backend.
+`npm run start` runs the compiled API. Host the contents of `client/dist` as static files and reverse proxy `/api` to the Express process. Set environment variables on the host. Use HTTPS at the edge.
 
 ## Scripts
 
-| Command | Description |
-|--------|-------------|
-| `npm run dev` | API (`tsx watch`) + Vite dev server with hot reload |
-| `npm run build` | TypeScript compile for server, Vite build for client |
-| `npm run start` | Start compiled API (`node server/dist/index.js`) |
+Use `npm run dev` when you are coding; it starts the Express API and the Vite dev server at the same time. When you want a production build, run `npm run build` first (that compiles the server and bundles the client). After that, `npm run start` only runs the API from the compiled output, which is what you use behind a reverse proxy once the frontend is built.
 
 ## Project layout
 
-- `server/` — Express app: models, routes, JWT auth, validation (Zod), issue export (CSV/JSON)
-- `client/` — React + Vite: Zustand stores, routed pages, debounced search, paginated list, reusable UI pieces
+- `client/` … React application, UI components, Zustand stores, API client
+- `server/` … Express application, Mongoose models, authentication middleware, issue and export routes
 
-This repo uses npm workspaces. `vite` and `@vitejs/plugin-react` are listed in the root `package.json` so the tooling resolves correctly when dependencies are hoisted to the top-level `node_modules` folder (common on Windows with workspaces).
-
-## API overview
+## API reference
 
 - `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer token)
-- `GET /api/issues` with query params: `page`, `limit`, `q`, `status`, `priority`, `severity`
-- `GET /api/issues/stats` — counts per status for the current user
-- `GET /api/issues/export?format=json|csv` — download filtered issues (same filters as list; optional `limit` up to 5000)
-- `GET/PATCH/DELETE /api/issues/:id`, `POST /api/issues`
-
-Passwords are hashed with bcrypt. Issues are scoped to the authenticated user.
-
-## License
-
-This project is provided for educational use as a coursework assignment.
+- `GET /api/issues` … query parameters: `page`, `limit`, `q`, `status`, `priority`, `severity`
+- `GET /api/issues/stats`
+- `GET /api/issues/export?format=json` or `format=csv`
+- `GET`, `PATCH`, `DELETE /api/issues/:id`, `POST /api/issues`
