@@ -14,5 +14,8 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
     "vite": "^6.4.2"
+  },
+  "overrides": {
+    "hasown": "2.0.2"
   }
 }
