@@ -8,9 +8,11 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Issue, IssueStatus } from "../../types/issue";
@@ -58,7 +60,7 @@ function BoardColumn({
       <div ref={setNodeRef} className="h-full min-h-[min(60vh,520px)]">
         <Card
           className={cn(
-            "flex h-full min-h-[inherit] flex-col gap-2 p-2 transition-[border-color,box-shadow]",
+            "flex h-full min-h-[inherit] flex-col gap-2 p-2",
             isOver && "border-accent/50 ring-1 ring-accent/30"
           )}
         >
@@ -73,15 +75,40 @@ function BoardColumn({
   );
 }
 
+function IssueCardFace({ issue, dragHandleProps }: { issue: Issue; dragHandleProps?: Record<string, unknown> }) {
+  return (
+    <div className="flex items-start gap-1.5 p-2.5">
+      <button
+        type="button"
+        className="mt-0.5 shrink-0 touch-none rounded p-0.5 text-muted hover:bg-white/5 hover:text-foreground cursor-grab active:cursor-grabbing"
+        {...(dragHandleProps ?? {})}
+        aria-label={`Drag to change status: ${issue.title}`}
+      >
+        <GripVertical className="size-4" aria-hidden />
+      </button>
+      <Link to={`/issues/${issue.id}`} className="min-w-0 flex-1 no-underline">
+        <p className="text-sm font-semibold leading-snug text-foreground hover:text-sky-200">{issue.title}</p>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{issue.description}</p>
+        <div className="mt-2">
+          <PriorityBadge priority={issue.priority} />
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 function DraggableIssueCard({ issue }: { issue: Issue }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: issue.id,
     data: { type: "issue", issue },
   });
 
-  const style = {
-    transform: transform ? CSS.Transform.toString(transform) : undefined,
-    opacity: isDragging ? 0.35 : 1,
+  // With DragOverlay, do not move the source with transform (avoids double image + scale jitter).
+  const style: CSSProperties = {
+    transform: isDragging ? undefined : transform ? CSS.Transform.toString(transform) : undefined,
+    opacity: isDragging ? 0 : 1,
+    transition: isDragging ? "none" : undefined,
+    pointerEvents: isDragging ? "none" : undefined,
   };
 
   return (
@@ -89,37 +116,22 @@ function DraggableIssueCard({ issue }: { issue: Issue }) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-lg border border-border/90 bg-surface-900/90 shadow-sm transition-shadow",
-        isDragging && "z-10 shadow-lg"
+        "rounded-lg border border-border/90 bg-surface-900/90 shadow-sm",
+        !isDragging && "transition-shadow"
       )}
     >
-      <div className="flex items-start gap-1.5 p-2.5">
-        <button
-          type="button"
-          className="mt-0.5 shrink-0 touch-none rounded p-0.5 text-muted hover:bg-white/5 hover:text-foreground cursor-grab active:cursor-grabbing"
-          {...listeners}
-          {...attributes}
-          aria-label={`Drag to change status: ${issue.title}`}
-        >
-          <GripVertical className="size-4" aria-hidden />
-        </button>
-        <Link to={`/issues/${issue.id}`} className="min-w-0 flex-1 no-underline">
-          <p className="text-sm font-semibold leading-snug text-foreground hover:text-sky-200">{issue.title}</p>
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{issue.description}</p>
-          <div className="mt-2">
-            <PriorityBadge priority={issue.priority} />
-          </div>
-        </Link>
-      </div>
+      <IssueCardFace issue={issue} dragHandleProps={{ ...listeners, ...attributes }} />
     </div>
   );
 }
 
-function CardPreview({ issue }: { issue: Issue }) {
+function DraggingCardPreview({ issue }: { issue: Issue }) {
   return (
-    <div className="w-[260px] rounded-lg border border-accent/40 bg-surface-900 p-3 shadow-xl">
-      <p className="text-sm font-semibold text-foreground">{issue.title}</p>
-      <p className="mt-1 line-clamp-2 text-xs text-muted">{issue.description}</p>
+    <div
+      className="pointer-events-none w-[min(260px,calc(100vw-2rem))] cursor-grabbing rounded-lg border border-border/90 bg-surface-900/95 shadow-xl ring-2 ring-accent/25"
+      style={{ touchAction: "none" }}
+    >
+      <IssueCardFace issue={issue} />
     </div>
   );
 }
@@ -157,6 +169,10 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
     setActiveId(String(e.active.id));
   }
 
+  function onDragCancel() {
+    setActiveId(null);
+  }
+
   async function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const { active, over } = e;
@@ -174,6 +190,7 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={onDragStart}
+      onDragCancel={onDragCancel}
       onDragEnd={(e) => void onDragEnd(e)}
     >
       <div className="flex gap-4 overflow-x-auto pb-4 pt-1 [scrollbar-gutter:stable]">
@@ -181,7 +198,9 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
           <BoardColumn key={col.id} status={col.id} title={col.title} issues={byStatus[col.id]} />
         ))}
       </div>
-      <DragOverlay dropAnimation={null}>{activeIssue ? <CardPreview issue={activeIssue} /> : null}</DragOverlay>
+      <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>
+        {activeIssue ? <DraggingCardPreview issue={activeIssue} /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
