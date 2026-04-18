@@ -23,7 +23,7 @@ export function RegisterPage() {
   return (
     <Page
       title="Create account"
-      subtitle="Use at least 8 characters for your password. Add a display name if you like."
+      subtitle="Use your email and password to continue. Add a display name if you like."
       className="mx-auto w-full max-w-lg"
     >
       <Card className="p-6 sm:p-8">
@@ -55,11 +55,14 @@ export function RegisterPage() {
           }}
           className="space-y-1"
         >
-          <Field label="Display name (optional)" icon={HiOutlineUser}>
-            <Input name="name" autoComplete="nickname" onFocus={clearError} />
-          </Field>
           <Field label="Email" icon={HiOutlineMail}>
-            <Input name="email" type="email" required autoComplete="email" />
+            <Input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              onFocus={clearError}
+            />
           </Field>
           <Field label="Password" icon={HiOutlineLockClosed}>
             <PasswordInput
@@ -70,6 +73,9 @@ export function RegisterPage() {
               onFocus={clearError}
             />
           </Field>
+          <Field label="Display name (optional)" icon={HiOutlineUser}>
+            <Input name="name" autoComplete="nickname" onFocus={clearError} />
+          </Field>
           <div className="pt-2">
             <Button
               type="submit"
@@ -79,7 +85,7 @@ export function RegisterPage() {
               {pending ? "Creating…" : "Create account"}
             </Button>
           </div>
-          <p className="mt-6! text-center text-sm text-muted sm:text-left">
+          <p className="mt-6 text-center text-sm text-muted sm:text-left">
             Already have an account?{" "}
             <Link
               to="/login"

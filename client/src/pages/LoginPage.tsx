@@ -79,7 +79,7 @@ export function LoginPage() {
               {pending ? "Signing in…" : "Sign in"}
             </Button>
           </div>
-          <p className="mt-6! text-center text-sm text-muted sm:text-left">
+          <p className="mt-6 text-center text-sm text-muted sm:text-left">
             No account?{" "}
             <Link
               to="/register"
