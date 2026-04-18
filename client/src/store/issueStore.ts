@@ -18,12 +18,17 @@ interface IssueStoreState {
   statsLoading: boolean;
   error: string | null;
   filters: FilterState;
+  /** Which issues UI is active so mutations refresh with the right query (list vs board). */
+  issuesView: "list" | "board";
+  setIssuesView: (view: "list" | "board") => void;
   selectedIssue: Issue | null;
   setFilters: (patch: Partial<FilterState>) => void;
   loadStats: () => Promise<void>;
   loadIssues: () => Promise<void>;
   /** Loads up to 200 issues across all statuses (for Kanban board). Respects search, priority, severity; ignores status filter and pagination. */
   loadBoardIssues: () => Promise<void>;
+  /** Refetch list data without toggling `loading` (avoids full-page flash after drag, edit, etc.). */
+  refreshIssuesSilently: () => Promise<void>;
   loadIssue: (id: string) => Promise<Issue>;
   createIssue: (input: Parameters<typeof issuesApi.createIssue>[0]) => Promise<Issue>;
   updateIssue: (id: string, patch: Partial<Issue>) => Promise<Issue>;
@@ -47,7 +52,10 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
   statsLoading: false,
   error: null,
   filters: defaultFilters,
+  issuesView: "list",
   selectedIssue: null,
+
+  setIssuesView: (view) => set({ issuesView: view }),
 
   setFilters: (patch) => {
     const next = { ...get().filters, ...patch };
@@ -104,6 +112,34 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
     }
   },
 
+  refreshIssuesSilently: async () => {
+    const f = get().filters;
+    const view = get().issuesView;
+    try {
+      const list =
+        view === "board"
+          ? await issuesApi.listIssues({
+              page: 1,
+              limit: 200,
+              q: f.q || undefined,
+              priority: f.priority || undefined,
+              severity: f.severity || undefined,
+            })
+          : await issuesApi.listIssues({
+              page: f.page,
+              limit: f.limit,
+              q: f.q || undefined,
+              status: f.status || undefined,
+              priority: f.priority || undefined,
+              severity: f.severity || undefined,
+            });
+      set({ list });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to refresh issues";
+      set({ error: msg });
+    }
+  },
+
   loadIssue: async (id) => {
     set({ selectedIssue: null });
     try {
@@ -118,13 +154,13 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
 
   createIssue: async (input) => {
     const issue = await issuesApi.createIssue(input);
-    await Promise.all([get().loadIssues(), get().loadStats()]);
+    await Promise.all([get().refreshIssuesSilently(), get().loadStats()]);
     return issue;
   },
 
   updateIssue: async (id, patch) => {
     const issue = await issuesApi.updateIssue(id, patch);
-    await Promise.all([get().loadIssues(), get().loadStats()]);
+    await Promise.all([get().refreshIssuesSilently(), get().loadStats()]);
     set((s) => ({
       selectedIssue: s.selectedIssue?.id === id ? issue : s.selectedIssue,
     }));
@@ -133,7 +169,7 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
 
   deleteIssue: async (id) => {
     await issuesApi.deleteIssue(id);
-    await Promise.all([get().loadIssues(), get().loadStats()]);
+    await Promise.all([get().refreshIssuesSilently(), get().loadStats()]);
     set((s) => ({
       selectedIssue: s.selectedIssue?.id === id ? null : s.selectedIssue,
     }));

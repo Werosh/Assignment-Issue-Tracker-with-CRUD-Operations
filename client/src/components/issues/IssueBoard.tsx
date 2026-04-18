@@ -12,8 +12,8 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useMemo, useState } from "react";
+import type { CSSProperties, MutableRefObject } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Issue, IssueStatus } from "../../types/issue";
 import { PriorityBadge } from "../IssueBadges";
@@ -41,10 +41,12 @@ function BoardColumn({
   status,
   title,
   issues,
+  suppressLinkNavUntilRef,
 }: {
   status: IssueStatus;
   title: string;
   issues: Issue[];
+  suppressLinkNavUntilRef: MutableRefObject<number>;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${status}`,
@@ -67,7 +69,9 @@ function BoardColumn({
           {issues.length === 0 ? (
             <p className="m-auto px-2 text-center text-xs text-muted/80">Drop issues here</p>
           ) : (
-            issues.map((issue) => <DraggableIssueCard key={issue.id} issue={issue} />)
+            issues.map((issue) => (
+              <DraggableIssueCard key={issue.id} issue={issue} suppressLinkNavUntilRef={suppressLinkNavUntilRef} />
+            ))
           )}
         </Card>
       </div>
@@ -75,7 +79,15 @@ function BoardColumn({
   );
 }
 
-function IssueCardFace({ issue, dragHandleProps }: { issue: Issue; dragHandleProps?: Record<string, unknown> }) {
+function IssueCardFace({
+  issue,
+  dragHandleProps,
+  suppressLinkNavUntilRef,
+}: {
+  issue: Issue;
+  dragHandleProps?: Record<string, unknown>;
+  suppressLinkNavUntilRef?: MutableRefObject<number>;
+}) {
   return (
     <div className="flex items-start gap-1.5 p-2.5">
       <button
@@ -86,7 +98,16 @@ function IssueCardFace({ issue, dragHandleProps }: { issue: Issue; dragHandlePro
       >
         <GripVertical className="size-4" aria-hidden />
       </button>
-      <Link to={`/issues/${issue.id}`} className="min-w-0 flex-1 no-underline">
+      <Link
+        to={`/issues/${issue.id}`}
+        className="min-w-0 flex-1 no-underline"
+        onClickCapture={(e) => {
+          if (suppressLinkNavUntilRef && Date.now() < suppressLinkNavUntilRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
         <p className="text-sm font-semibold leading-snug text-foreground hover:text-sky-200">{issue.title}</p>
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{issue.description}</p>
         <div className="mt-2">
@@ -97,7 +118,13 @@ function IssueCardFace({ issue, dragHandleProps }: { issue: Issue; dragHandlePro
   );
 }
 
-function DraggableIssueCard({ issue }: { issue: Issue }) {
+function DraggableIssueCard({
+  issue,
+  suppressLinkNavUntilRef,
+}: {
+  issue: Issue;
+  suppressLinkNavUntilRef: MutableRefObject<number>;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: issue.id,
     data: { type: "issue", issue },
@@ -120,7 +147,11 @@ function DraggableIssueCard({ issue }: { issue: Issue }) {
         !isDragging && "transition-shadow"
       )}
     >
-      <IssueCardFace issue={issue} dragHandleProps={{ ...listeners, ...attributes }} />
+      <IssueCardFace
+        issue={issue}
+        dragHandleProps={{ ...listeners, ...attributes }}
+        suppressLinkNavUntilRef={suppressLinkNavUntilRef}
+      />
     </div>
   );
 }
@@ -143,6 +174,8 @@ interface Props {
 
 export function IssueBoard({ issues, onStatusChange }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  /** After drag end/cancel, block stray pointer-up from activating the card link (ghost click). */
+  const suppressLinkNavUntilRef = useRef(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -171,10 +204,12 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
 
   function onDragCancel() {
     setActiveId(null);
+    suppressLinkNavUntilRef.current = Date.now() + 400;
   }
 
   async function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
+    suppressLinkNavUntilRef.current = Date.now() + 400;
     const { active, over } = e;
     if (!over) return;
     const issueId = String(active.id);
@@ -195,7 +230,13 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
     >
       <div className="flex gap-4 overflow-x-auto pb-4 pt-1 [scrollbar-gutter:stable]">
         {COLUMNS.map((col) => (
-          <BoardColumn key={col.id} status={col.id} title={col.title} issues={byStatus[col.id]} />
+          <BoardColumn
+            key={col.id}
+            status={col.id}
+            title={col.title}
+            issues={byStatus[col.id]}
+            suppressLinkNavUntilRef={suppressLinkNavUntilRef}
+          />
         ))}
       </div>
       <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>

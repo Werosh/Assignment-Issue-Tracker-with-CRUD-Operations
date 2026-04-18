@@ -64,10 +64,15 @@ export function IssuesListPage() {
   const loadBoardIssues = useIssueStore((s) => s.loadBoardIssues);
   const loadStats = useIssueStore((s) => s.loadStats);
   const updateIssue = useIssueStore((s) => s.updateIssue);
+  const setIssuesView = useIssueStore((s) => s.setIssuesView);
 
   const [qInput, setQInput] = useState(filters.q);
   const debouncedQ = useDebouncedValue(qInput, 320);
   const [view, setView] = useState<"list" | "board">("list");
+
+  useEffect(() => {
+    setIssuesView(view);
+  }, [view, setIssuesView]);
 
   useEffect(() => {
     loadStats();
