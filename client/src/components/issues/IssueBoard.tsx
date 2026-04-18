@@ -11,12 +11,14 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import type { CSSProperties, MutableRefObject } from "react";
 import { useMemo, useRef, useState } from "react";
 import type { To } from "react-router-dom";
 import { Link } from "react-router-dom";
 import type { Issue, IssueStatus } from "../../types/issue";
+import { cardHoverTransition, dragOverlayTransition, dragOverlayVariants } from "../../lib/motionPresets";
 import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 import { PriorityBadge } from "../IssueBadges";
 import { Card } from "../ui/Card";
@@ -58,7 +60,11 @@ function BoardColumn({
   });
 
   return (
-    <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col lg:min-w-0 lg:w-0 lg:max-w-none lg:flex-1">
+    <motion.div
+      className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col lg:min-w-0 lg:w-0 lg:max-w-none lg:flex-1"
+      animate={isOver ? { scale: 1.008 } : { scale: 1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+    >
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2 px-1">
         <h3 className="text-[0.8rem] font-semibold uppercase tracking-wide text-muted">{title}</h3>
         <span className="rounded-md bg-surface-800 px-2 py-0.5 font-mono text-xs text-muted">{issues.length}</span>
@@ -90,7 +96,7 @@ function BoardColumn({
           )}
         </div>
       </Card>
-    </div>
+    </motion.div>
   );
 }
 
@@ -158,9 +164,11 @@ function DraggableIssueCard({
   };
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
+      whileHover={!isDragging ? { y: -2 } : undefined}
+      transition={cardHoverTransition}
       className={cn(
         "shrink-0 rounded-lg border border-border/90 bg-surface-900/90 shadow-sm",
         !isDragging && "transition-shadow"
@@ -172,7 +180,7 @@ function DraggableIssueCard({
         dragHandleProps={{ ...listeners, ...attributes }}
         suppressLinkNavUntilRef={suppressLinkNavUntilRef}
       />
-    </div>
+    </motion.div>
   );
 }
 
@@ -184,12 +192,16 @@ function DraggingCardPreview({
   issueTo: (issueId: string) => To;
 }) {
   return (
-    <div
+    <motion.div
       className="pointer-events-none w-[min(260px,calc(100vw-2rem))] cursor-grabbing rounded-lg border border-border/90 bg-surface-900/95 shadow-xl ring-2 ring-accent/25"
       style={{ touchAction: "none" }}
+      variants={dragOverlayVariants}
+      initial="hidden"
+      animate="visible"
+      transition={dragOverlayTransition}
     >
       <IssueCardFace issue={issue} issueTo={issueTo} />
-    </div>
+    </motion.div>
   );
 }
 
@@ -271,7 +283,13 @@ export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
             />
           ))}
         </div>
-        <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>
+        <DragOverlay
+          dropAnimation={{
+            duration: 220,
+            easing: "cubic-bezier(0.25, 0.8, 0.25, 1)",
+          }}
+          style={{ zIndex: 60 }}
+        >
           {activeIssue ? <DraggingCardPreview issue={activeIssue} issueTo={issueTo} /> : null}
         </DragOverlay>
       </DndContext>

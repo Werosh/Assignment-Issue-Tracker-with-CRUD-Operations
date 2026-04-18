@@ -1,6 +1,13 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Pencil, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  modalBackdropTransition,
+  modalBackdropVariants,
+  modalPanelTransition,
+  modalPanelVariants,
+} from "../lib/motionPresets";
 import { Modal } from "./Modal";
 import { PriorityBadge, SeverityBadge, StatusBadge } from "./IssueBadges";
 import { Card } from "./ui/Card";
@@ -117,8 +124,6 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open || !issueId) return null;
-
   const statusModalTitle =
     pendingStatus === "resolved" ? "Mark as resolved?" : pendingStatus === "closed" ? "Close this issue?" : "Update status?";
   const statusModalBody =
@@ -129,20 +134,33 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
         : "";
 
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/55 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:p-6"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal
-        aria-labelledby="issue-detail-modal-title"
-        className="relative my-auto w-full max-w-4xl max-h-[min(90vh,100%)] overflow-y-auto rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)] sm:p-6"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {open && issueId ? (
+        <motion.div
+          key={issueId}
+          role="presentation"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/55 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:p-6"
+          variants={modalBackdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          transition={modalBackdropTransition}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <motion.div
+            role="dialog"
+            aria-modal
+            aria-labelledby="issue-detail-modal-title"
+            className="app-scroll relative my-auto w-full max-w-4xl max-h-[min(90vh,100%)] overflow-y-auto rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)] sm:p-6"
+            variants={modalPanelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={modalPanelTransition}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
         <button
           type="button"
           onClick={onClose}
@@ -260,6 +278,7 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
             <Modal
               open={confirmStatus && pendingStatus != null}
               title={statusModalTitle}
+              overlayClassName="z-[60]"
               onClose={() => {
                 setConfirmStatus(false);
                 setPendingStatus(null);
@@ -283,6 +302,7 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
             <Modal
               open={confirmDelete}
               title="Delete issue?"
+              overlayClassName="z-[60]"
               onClose={() => setConfirmDelete(false)}
               onConfirm={() =>
                 run(async () => {
@@ -298,7 +318,9 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
             </Modal>
           </>
         ) : null}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
