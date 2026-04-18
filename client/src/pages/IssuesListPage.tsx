@@ -10,6 +10,7 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
@@ -26,6 +27,7 @@ import { IssueBoard } from "../components/issues/IssueBoard";
 import { IssueGroupedList } from "../components/issues/IssueGroupedList";
 import { IssueDetailModal } from "../components/IssueDetailModal";
 import { NewIssueModal } from "../components/NewIssueModal";
+import { issuesViewTransition, issuesViewVariants, viewTogglePillTransition } from "../lib/motionPresets";
 
 function StatCard({
   label,
@@ -154,9 +156,21 @@ export function IssuesListPage() {
     <Page
       title="Issues"
       subtitle={
-        view === "board"
-          ? "Grab a card by the handle and drop it into another column. Search and filters behave the same as in list view—up to 200 issues shown."
-          : "Browse by status in one scrolling list. Without a status filter, you'll see your 200 most recent updates. Search runs a moment after you stop typing."
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={view}
+            className="m-0"
+            variants={issuesViewVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={issuesViewTransition}
+          >
+            {view === "board"
+              ? "Drag from the grip to move cards between columns. Filters and search work like list view; we load up to 200 issues."
+              : "Browse by status in one scrolling list. Without a status filter, you'll see your 200 most recent updates. Search runs a moment after you stop typing."}
+          </motion.p>
+        </AnimatePresence>
       }
       stickyFooter={
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
@@ -187,28 +201,42 @@ export function IssuesListPage() {
                 </span>
               ) : null}
             </button>
-            <div className="flex rounded-lg border border-border bg-surface-900 p-0.5">
+            <div className="relative flex rounded-lg border border-border bg-surface-900 p-0.5">
               <button
                 type="button"
                 onClick={() => setView("list")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  view === "list" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                  "relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-initial",
+                  view === "list" ? "text-foreground" : "text-muted hover:text-foreground"
                 )}
               >
-                <LayoutList className="size-4" aria-hidden />
-                List
+                {view === "list" ? (
+                  <motion.span
+                    layoutId="issues-view-pill"
+                    className="absolute inset-0 rounded-md bg-surface-800 shadow-sm"
+                    transition={viewTogglePillTransition}
+                  />
+                ) : null}
+                <LayoutList className="relative z-10 size-4" aria-hidden />
+                <span className="relative z-10">List</span>
               </button>
               <button
                 type="button"
                 onClick={() => setView("board")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  view === "board" ? "bg-surface-800 text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                  "relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-initial",
+                  view === "board" ? "text-foreground" : "text-muted hover:text-foreground"
                 )}
               >
-                <Columns3 className="size-4" aria-hidden />
-                Board
+                {view === "board" ? (
+                  <motion.span
+                    layoutId="issues-view-pill"
+                    className="absolute inset-0 rounded-md bg-surface-800 shadow-sm"
+                    transition={viewTogglePillTransition}
+                  />
+                ) : null}
+                <Columns3 className="relative z-10 size-4" aria-hidden />
+                <span className="relative z-10">Board</span>
               </button>
             </div>
           </div>
@@ -239,105 +267,125 @@ export function IssuesListPage() {
         </>
       }
     >
-      {view === "list" ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-          {error ? (
-            <div
-              className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
-              role="alert"
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          {view === "list" ? (
+            <motion.div
+              key="issues-list"
+              className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden"
+              variants={issuesViewVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={issuesViewTransition}
             >
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
-              {error}
-            </div>
-          ) : null}
+              {error ? (
+                <div
+                  className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
+                  role="alert"
+                >
+                  <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
+                  {error}
+                </div>
+              ) : null}
 
-          {loading ? (
-            <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
-              <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
-              Loading issues…
-            </div>
-          ) : null}
+              {loading ? (
+                <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
+                  <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+                  Loading issues…
+                </div>
+              ) : null}
 
-          {!loading && list && list.items.length === 0 ? (
-            <p className="shrink-0 text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
-          ) : null}
+              {!loading && list && list.items.length === 0 ? (
+                <p className="shrink-0 text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
+              ) : null}
 
-          {list && list.items.length > 0 ? (
-            <div className="app-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-              <IssueGroupedList issues={list.items} issueTo={issueTo} />
-            </div>
-          ) : null}
+              {list && list.items.length > 0 ? (
+                <div className="app-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+                  <IssueGroupedList issues={list.items} issueTo={issueTo} />
+                </div>
+              ) : null}
 
-          {!loading && list && !filters.status && list.total > 200 ? (
-            <p className="shrink-0 text-xs text-muted">
-              Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
-            </p>
-          ) : null}
-
-          {list && filters.status && list.totalPages > 1 ? (
-            <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 pt-2">
-              <Button
-                variant="secondary"
-                type="button"
-                disabled={filters.page <= 1}
-                onClick={() => setFilters({ page: filters.page - 1 })}
-              >
-                Previous
-              </Button>
-              <span className="px-2 text-sm text-muted">
-                Page {list.page} of {list.totalPages}
-                <span className="text-muted/70"> · {list.total} total</span>
-              </span>
-              <Button
-                variant="secondary"
-                type="button"
-                disabled={filters.page >= list.totalPages}
-                onClick={() => setFilters({ page: filters.page + 1 })}
-              >
-                Next
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
-          {error ? (
-            <div
-              className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
-              role="alert"
-            >
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
-              {error}
-            </div>
-          ) : null}
-
-          {loading ? (
-            <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
-              <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
-              Loading issues…
-            </div>
-          ) : null}
-
-          {list && view === "board" ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-              <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden">
-                <IssueBoard
-                  issues={list.items}
-                  issueTo={issueTo}
-                  onStatusChange={async (issueId, status) => {
-                    await updateIssue(issueId, { status });
-                  }}
-                />
-              </div>
-              {list.total > 200 ? (
+              {!loading && list && !filters.status && list.total > 200 ? (
                 <p className="shrink-0 text-xs text-muted">
-                  Showing the first 200 issues for the board. Refine search or switch to list view for pagination.
+                  Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
                 </p>
               ) : null}
-            </div>
-          ) : null}
-        </div>
-      )}
+
+              {list && filters.status && list.totalPages > 1 ? (
+                <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 pt-2">
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    disabled={filters.page <= 1}
+                    onClick={() => setFilters({ page: filters.page - 1 })}
+                  >
+                    Previous
+                  </Button>
+                  <span className="px-2 text-sm text-muted">
+                    Page {list.page} of {list.totalPages}
+                    <span className="text-muted/70"> · {list.total} total</span>
+                  </span>
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    disabled={filters.page >= list.totalPages}
+                    onClick={() => setFilters({ page: filters.page + 1 })}
+                  >
+                    Next
+                  </Button>
+                </div>
+              ) : null}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="issues-board"
+              className="flex min-h-0 flex-1 flex-col gap-4"
+              variants={issuesViewVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={issuesViewTransition}
+            >
+              {error ? (
+                <div
+                  className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
+                  role="alert"
+                >
+                  <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
+                  {error}
+                </div>
+              ) : null}
+
+              {loading ? (
+                <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
+                  <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+                  Loading issues…
+                </div>
+              ) : null}
+
+              {list && view === "board" ? (
+                <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+                  <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden">
+                    <IssueBoard
+                      issues={list.items}
+                      issueTo={issueTo}
+                      onStatusChange={async (issueId, status) => {
+                        await updateIssue(issueId, { status });
+                      }}
+                    />
+                  </div>
+                  {list.total > 200 ? (
+                    <p className="shrink-0 text-xs text-muted">
+                      Showing the first 200 issues for the board. Refine search or switch to list view for pagination.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </Page>
     <NewIssueModal open={isNewIssueModal} onClose={closeNewIssueModal} />
     <IssueDetailModal issueId={issueParam} open={Boolean(issueParam)} onClose={closeIssueModal} />

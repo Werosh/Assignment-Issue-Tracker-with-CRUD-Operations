@@ -13,7 +13,7 @@ export function Page({
   stickyFooter,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -42,9 +42,9 @@ export function Page({
                 {title}
               </h1>
               {subtitle ? (
-                <p className="mt-2 max-w-4xl text-[0.95rem] leading-relaxed text-muted lg:max-w-5xl">
+                <div className="mt-2 max-w-4xl text-[0.95rem] leading-relaxed text-muted lg:max-w-5xl">
                   {subtitle}
-                </p>
+                </div>
               ) : null}
             </div>
             {actions ? (
@@ -82,9 +82,9 @@ export function Page({
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-2 max-w-4xl text-[0.95rem] leading-relaxed text-muted lg:max-w-5xl">
+            <div className="mt-2 max-w-4xl text-[0.95rem] leading-relaxed text-muted lg:max-w-5xl">
               {subtitle}
-            </p>
+            </div>
           ) : null}
         </div>
         {actions ? (

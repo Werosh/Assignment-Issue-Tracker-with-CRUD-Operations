@@ -35,3 +35,23 @@ export const cardHoverTransition = {
   stiffness: 400,
   damping: 35,
 };
+
+/** List ↔ board main content swap */
+export const issuesViewVariants = {
+  hidden: { opacity: 0, y: 14, scale: 0.988 },
+  visible: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -10, scale: 0.992 },
+};
+
+export const issuesViewTransition = {
+  type: "spring" as const,
+  stiffness: 280,
+  damping: 30,
+  mass: 0.72,
+};
+
+export const viewTogglePillTransition = {
+  type: "spring" as const,
+  stiffness: 400,
+  damping: 30,
+};
