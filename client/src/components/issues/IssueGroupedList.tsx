@@ -137,7 +137,7 @@ export function IssueGroupedList({ issues }: Props) {
                 type="button"
                 className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-white/5 hover:text-accent"
                 title="New issue"
-                onClick={() => navigate("/issues/new")}
+                onClick={() => navigate("/?new=1")}
               >
                 <Plus className="size-4" aria-hidden />
               </button>

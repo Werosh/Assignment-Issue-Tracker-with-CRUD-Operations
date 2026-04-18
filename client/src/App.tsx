@@ -4,7 +4,6 @@ import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 import { IssueEditPage } from "./pages/IssueEditPage";
-import { IssueNewPage } from "./pages/IssueNewPage";
 import { IssuesListPage } from "./pages/IssuesListPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -36,14 +35,7 @@ export function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/issues/new"
-              element={
-                <ProtectedRoute>
-                  <IssueNewPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/issues/new" element={<Navigate to="/?new=1" replace />} />
             <Route
               path="/issues/:id"
               element={

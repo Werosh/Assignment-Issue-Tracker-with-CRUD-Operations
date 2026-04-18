@@ -9,6 +9,8 @@ import { Card } from "./ui/Card";
 interface Props {
   initial?: Partial<Issue>;
   submitLabel: string;
+  /** When true, renders without the outer Card (e.g. inside NewIssueModal). */
+  embedInModal?: boolean;
   onSubmit: (values: {
     title: string;
     description: string;
@@ -19,7 +21,7 @@ interface Props {
   onCancel?: () => void;
 }
 
-export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
+export function IssueForm({ initial, submitLabel, onSubmit, onCancel, embedInModal }: Props) {
   async function handle(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -32,18 +34,17 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
     });
   }
 
-  return (
-    <Card className="w-full max-w-4xl p-5 sm:p-7">
-      <form key={initial?.id ?? "new"} onSubmit={handle} className="space-y-4">
-        <Field label="Title">
-          <Input name="title" required maxLength={200} defaultValue={initial?.title} autoComplete="off" />
-        </Field>
-        <Field label="Description">
-          <Textarea name="description" required maxLength={10000} defaultValue={initial?.description} />
-        </Field>
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status & triage</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+  const form = (
+    <form key={initial?.id ?? "new"} onSubmit={handle} className="space-y-4">
+      <Field label="Title">
+        <Input name="title" required maxLength={200} defaultValue={initial?.title} autoComplete="off" />
+      </Field>
+      <Field label="Description">
+        <Textarea name="description" required maxLength={10000} defaultValue={initial?.description} />
+      </Field>
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status & triage</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Status">
             <Select name="status" defaultValue={initial?.status ?? "open"}>
               <option value="open">Open</option>
@@ -68,19 +69,28 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
               <option value="critical">Critical</option>
             </Select>
           </Field>
-          </div>
         </div>
-        <div className="flex flex-wrap gap-2 pt-2">
-          <Button type="submit" variant="primary">
-            {submitLabel}
+      </div>
+      <div className="flex flex-wrap gap-2 pt-2">
+        <Button type="submit" variant="primary">
+          {submitLabel}
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Cancel
           </Button>
-          {onCancel ? (
-            <Button type="button" variant="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-          ) : null}
-        </div>
-      </form>
+        ) : null}
+      </div>
+    </form>
+  );
+
+  if (embedInModal) {
+    return <div className="w-full">{form}</div>;
+  }
+
+  return (
+    <Card className="w-full max-w-4xl p-5 sm:p-7">
+      {form}
     </Card>
   );
 }

@@ -11,10 +11,10 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Page } from "../components/Page";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -27,6 +27,7 @@ import { useIssueStore } from "../store/issueStore";
 import { cn } from "../lib/cn";
 import { IssueBoard } from "../components/issues/IssueBoard";
 import { IssueGroupedList } from "../components/issues/IssueGroupedList";
+import { NewIssueModal } from "../components/NewIssueModal";
 
 function StatCard({
   label,
@@ -52,6 +53,11 @@ function StatCard({
 
 export function IssuesListPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNewIssueModal = searchParams.get("new") === "1";
+  const closeNewIssueModal = useCallback(() => {
+    navigate("/", { replace: true });
+  }, [navigate]);
   const filters = useIssueStore((s) => s.filters);
   const setFilters = useIssueStore((s) => s.setFilters);
   const list = useIssueStore((s) => s.list);
@@ -112,6 +118,7 @@ export function IssuesListPage() {
   );
 
   return (
+    <>
     <Page
       title="Issues"
       subtitle={
@@ -165,7 +172,7 @@ export function IssuesListPage() {
             <VscJson className="size-4 text-muted" aria-hidden />
             Export JSON
           </Button>
-          <Button variant="primary" type="button" className="gap-2 shadow-accent/25" onClick={() => navigate("/issues/new")}>
+          <Button variant="primary" type="button" className="gap-2 shadow-accent/25" onClick={() => navigate("/?new=1")}>
             <Plus className="size-4" aria-hidden />
             New issue
           </Button>
@@ -316,5 +323,7 @@ export function IssuesListPage() {
         <p className="mt-4 text-xs text-muted">Showing the first 200 issues for the board. Refine search or switch to list view for pagination.</p>
       ) : null}
     </Page>
+    <NewIssueModal open={isNewIssueModal} onClose={closeNewIssueModal} />
+    </>
   );
 }
