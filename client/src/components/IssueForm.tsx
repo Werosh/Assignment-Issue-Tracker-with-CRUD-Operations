@@ -34,14 +34,16 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
 
   return (
     <Card className="max-w-2xl p-5 sm:p-7">
-      <form onSubmit={handle} className="space-y-4">
+      <form key={initial?.id ?? "new"} onSubmit={handle} className="space-y-4">
         <Field label="Title">
           <Input name="title" required maxLength={200} defaultValue={initial?.title} autoComplete="off" />
         </Field>
         <Field label="Description">
           <Textarea name="description" required maxLength={10000} defaultValue={initial?.description} />
         </Field>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status & triage</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Status">
             <Select name="status" defaultValue={initial?.status ?? "open"}>
               <option value="open">Open</option>
@@ -66,6 +68,7 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
               <option value="critical">Critical</option>
             </Select>
           </Field>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 pt-2">
           <Button type="submit" variant="primary">

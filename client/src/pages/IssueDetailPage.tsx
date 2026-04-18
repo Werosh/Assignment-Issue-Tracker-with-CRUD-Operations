@@ -1,10 +1,4 @@
-import {
-  ArrowLeft,
-  CheckCircle2,
-  DoorClosed,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Modal } from "../components/Modal";
@@ -12,6 +6,9 @@ import { Page } from "../components/Page";
 import { PriorityBadge, SeverityBadge, StatusBadge } from "../components/IssueBadges";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
+import { Field } from "../components/ui/Field";
+import { Select } from "../components/ui/Select";
+import type { IssueStatus } from "../types/issue";
 import { useIssueStore } from "../store/issueStore";
 
 export function IssueDetailPage() {
@@ -25,9 +22,10 @@ export function IssueDetailPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [confirmResolve, setConfirmResolve] = useState(false);
-  const [confirmClose, setConfirmClose] = useState(false);
+  const [statusSelect, setStatusSelect] = useState<IssueStatus>("open");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmStatus, setConfirmStatus] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<IssueStatus | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -41,6 +39,12 @@ export function IssueDetailPage() {
     };
   }, [id, loadIssue, clearSelected]);
 
+  useEffect(() => {
+    if (issue) {
+      setStatusSelect(issue.status);
+    }
+  }, [issue?.status, issue?.id]);
+
   async function run(action: () => Promise<unknown>) {
     setPending(true);
     setError(null);
@@ -51,6 +55,19 @@ export function IssueDetailPage() {
     } finally {
       setPending(false);
     }
+  }
+
+  function onStatusChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const next = e.target.value as IssueStatus;
+    if (next === "resolved" || next === "closed") {
+      setPendingStatus(next);
+      setConfirmStatus(true);
+      return;
+    }
+    setStatusSelect(next);
+    void run(async () => {
+      await updateIssue(issue!.id, { status: next });
+    });
   }
 
   if (!id) {
@@ -81,6 +98,15 @@ export function IssueDetailPage() {
     return null;
   }
 
+  const statusModalTitle =
+    pendingStatus === "resolved" ? "Mark as resolved?" : pendingStatus === "closed" ? "Close this issue?" : "Update status?";
+  const statusModalBody =
+    pendingStatus === "resolved"
+      ? "This sets the status to resolved. You can change it again anytime below."
+      : pendingStatus === "closed"
+        ? "Closed usually means no further work. You can reopen by changing status here or on the edit screen."
+        : "";
+
   return (
     <Page
       title={issue.title}
@@ -91,18 +117,6 @@ export function IssueDetailPage() {
             <Trash2 className="size-4" aria-hidden />
             Delete
           </Button>
-          {issue.status !== "resolved" ? (
-            <Button variant="secondary" type="button" disabled={pending} className="gap-2" onClick={() => setConfirmResolve(true)}>
-              <CheckCircle2 className="size-4" aria-hidden />
-              Resolve
-            </Button>
-          ) : null}
-          {issue.status !== "closed" ? (
-            <Button variant="secondary" type="button" disabled={pending} className="gap-2" onClick={() => setConfirmClose(true)}>
-              <DoorClosed className="size-4" aria-hidden />
-              Close
-            </Button>
-          ) : null}
           <Button variant="primary" type="button" disabled={pending} className="gap-2" onClick={() => navigate(`/issues/${issue.id}/edit`)}>
             <Pencil className="size-4" aria-hidden />
             Edit
@@ -122,6 +136,24 @@ export function IssueDetailPage() {
         <SeverityBadge severity={issue.severity} />
       </div>
 
+      <Card className="mb-5 p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status</h2>
+        <p className="mb-3 text-sm text-muted">Set the workflow state anytime. Resolving or closing asks for confirmation.</p>
+        <Field label="Current status">
+          <Select
+            value={statusSelect}
+            disabled={pending}
+            onChange={onStatusChange}
+            aria-label="Issue status"
+          >
+            <option value="open">Open</option>
+            <option value="in_progress">In progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </Select>
+        </Field>
+      </Card>
+
       <Card className="p-5 sm:p-6">
         <article className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-foreground/95">{issue.description}</article>
       </Card>
@@ -137,34 +169,26 @@ export function IssueDetailPage() {
       </p>
 
       <Modal
-        open={confirmResolve}
-        title="Mark as resolved?"
-        onClose={() => setConfirmResolve(false)}
+        open={confirmStatus && pendingStatus != null}
+        title={statusModalTitle}
+        onClose={() => {
+          setConfirmStatus(false);
+          setPendingStatus(null);
+          setStatusSelect(issue.status);
+        }}
         onConfirm={() =>
           run(async () => {
-            await updateIssue(issue.id, { status: "resolved" });
-            setConfirmResolve(false);
+            if (!pendingStatus) return;
+            await updateIssue(issue.id, { status: pendingStatus });
+            setStatusSelect(pendingStatus);
+            setConfirmStatus(false);
+            setPendingStatus(null);
           })
         }
-        confirmLabel="Mark resolved"
+        confirmLabel={pendingStatus === "closed" ? "Close issue" : "Mark resolved"}
+        danger={pendingStatus === "closed"}
       >
-        This sets the status to resolved. You can still reopen it by editing the issue later.
-      </Modal>
-
-      <Modal
-        open={confirmClose}
-        title="Close this issue?"
-        onClose={() => setConfirmClose(false)}
-        onConfirm={() =>
-          run(async () => {
-            await updateIssue(issue.id, { status: "closed" });
-            setConfirmClose(false);
-          })
-        }
-        confirmLabel="Close issue"
-        danger
-      >
-        Closed issues are typically finished. You can change the status again from the editor if needed.
+        {statusModalBody}
       </Modal>
 
       <Modal
