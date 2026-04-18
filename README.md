@@ -80,9 +80,9 @@ The client uses relative `/api/...` URLs. In production you can host the **React
 3. **Build command:** `npm install && npm run build -w server`
 4. **Start command:** `npm run start -w server`
 5. Under **Environment**, set:
-   - `MONGODB_URI` — your Atlas `mongodb+srv` URI (same as local).
-   - `JWT_SECRET` — a long random string (the server requires at least 16 characters).
-   - `CLIENT_ORIGIN` — the exact browser origin of your Netlify site. For this deployment use `https://issuetrackerbywk.netlify.app` (no path, no trailing slash). If you add a custom domain later, set this to that origin instead (e.g. `https://issues.example.com`).
+   - `MONGODB_URI` - your Atlas `mongodb+srv` URI (same as local).
+   - `JWT_SECRET` - a long random string (the server requires at least 16 characters).
+   - `CLIENT_ORIGIN` - the exact browser origin of your Netlify site. For this deployment use `https://issuetrackerbywk.netlify.app` (no path, no trailing slash). If you add a custom domain later, set this to that origin instead (e.g. `https://issues.example.com`).
 6. Render injects `PORT`; you do not need to set it unless you have a special case.
 7. Deploy and note the public URL (for example `https://assignment-issue-tracker-with-crud.onrender.com`).
 
