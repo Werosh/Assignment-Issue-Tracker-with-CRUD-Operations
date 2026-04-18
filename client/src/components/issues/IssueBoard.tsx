@@ -232,6 +232,14 @@ export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
     })
   );
 
+  /** While resolve/close confirmation is open, keep the card in the target column (avoids snap-back to the source). */
+  const issuesForBoard = useMemo(() => {
+    if (!pendingStatusChange) return issues;
+    return issues.map((i) =>
+      i.id === pendingStatusChange.issueId ? { ...i, status: pendingStatusChange.next } : i
+    );
+  }, [issues, pendingStatusChange]);
+
   const byStatus = useMemo(() => {
     const map: Record<IssueStatus, Issue[]> = {
       open: [],
@@ -239,14 +247,14 @@ export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
       resolved: [],
       closed: [],
     };
-    for (const i of issues) {
+    for (const i of issuesForBoard) {
       if (map[i.status]) map[i.status].push(i);
     }
     for (const s of COLUMNS) {
       map[s.id].sort(compareIssuesByPrioritySeverityUpdated);
     }
     return map;
-  }, [issues]);
+  }, [issuesForBoard]);
 
   const activeIssue = activeId ? issues.find((i) => i.id === activeId) : undefined;
 
