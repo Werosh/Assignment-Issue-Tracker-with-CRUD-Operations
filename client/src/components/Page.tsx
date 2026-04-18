@@ -1,30 +1,29 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/cn";
 
-export function Page({ title, subtitle, actions, children }: {
+export function Page({
+  title,
+  subtitle,
+  actions,
+  children,
+  className,
+}: {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <div style={{ maxWidth: "1040px", margin: "0 auto", padding: "1.5rem 1.25rem 3rem" }}>
-      <header
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: "1.65rem", letterSpacing: "-0.02em" }}>{title}</h1>
+    <div className={cn("mx-auto max-w-5xl px-5 pb-16 pt-8 sm:px-6", className)}>
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
           {subtitle ? (
-            <p style={{ margin: "0.35rem 0 0", color: "var(--text-muted)", maxWidth: "56ch" }}>{subtitle}</p>
+            <p className="mt-2 max-w-2xl text-[0.95rem] leading-relaxed text-muted">{subtitle}</p>
           ) : null}
         </div>
-        {actions ? <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>{actions}</div> : null}
+        {actions ? <div className="flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
       </header>
       {children}
     </div>

@@ -1,3 +1,4 @@
+import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IssueForm } from "../components/IssueForm";
@@ -13,9 +14,10 @@ export function IssueNewPage() {
   return (
     <Page title="New issue" subtitle="Capture enough context that future-you knows what to do.">
       {error ? (
-        <p style={{ color: "var(--danger)" }} role="alert">
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-100" role="alert">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
           {error}
-        </p>
+        </div>
       ) : null}
       <IssueForm
         submitLabel="Create issue"

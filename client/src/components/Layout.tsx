@@ -1,6 +1,8 @@
+import { LayoutDashboard, LogIn, LogOut, UserPlus } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "./ui/Button";
 import { useAuthStore } from "../store/authStore";
+import { cn } from "../lib/cn";
 
 export function Layout() {
   const user = useAuthStore((s) => s.user);
@@ -8,51 +10,43 @@ export function Layout() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-      <header
-        style={{
-          borderBottom: "1px solid var(--border)",
-          background: "rgba(12, 14, 18, 0.8)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1080px",
-            margin: "0 auto",
-            padding: "0.9rem 1.25rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-          }}
-        >
-          <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
-            <span style={{ fontWeight: 700, letterSpacing: "-0.03em" }}>Issue Tracker</span>
-            <span style={{ color: "var(--text-muted)", fontWeight: 500, marginLeft: "0.5rem", fontSize: "0.85rem" }}>
-              workspace
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-surface-950/75 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-6">
+          <Link to="/" className={cn("flex items-center gap-2.5 no-underline transition-opacity hover:opacity-90")}>
+            <span className="flex size-9 items-center justify-center rounded-lg bg-accent/15 text-accent ring-1 ring-accent/30">
+              <LayoutDashboard className="size-[1.15rem]" aria-hidden />
+            </span>
+            <span className="font-semibold tracking-tight text-foreground">
+              Issue Tracker
+              <span className="ml-2 text-[0.8rem] font-normal text-muted">workspace</span>
             </span>
           </Link>
-          <nav style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <nav className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  {user.name || user.email}
-                </span>
+                <span className="hidden max-w-[200px] truncate text-sm text-muted sm:inline">{user.name || user.email}</span>
                 <Button
                   variant="ghost"
+                  type="button"
+                  className="gap-1.5 px-3 font-medium"
                   onClick={() => {
                     logout();
                     navigate("/login");
                   }}
                 >
+                  <LogOut className="size-4" aria-hidden />
                   Sign out
                 </Button>
               </>
             ) : (
               <>
-                <Link to="/login">Sign in</Link>
-                <Button variant="secondary" onClick={() => navigate("/register")}>
+                <Button variant="ghost" type="button" className="gap-1.5 px-3 font-medium" onClick={() => navigate("/login")}>
+                  <LogIn className="size-4" aria-hidden />
+                  Sign in
+                </Button>
+                <Button variant="secondary" type="button" className="gap-1.5" onClick={() => navigate("/register")}>
+                  <UserPlus className="size-4" aria-hidden />
                   Create account
                 </Button>
               </>
@@ -60,7 +54,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <main style={{ flex: 1 }}>
+      <main className="flex-1">
         <Outlet />
       </main>
     </div>

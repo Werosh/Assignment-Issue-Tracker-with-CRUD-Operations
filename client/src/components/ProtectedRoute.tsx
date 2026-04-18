@@ -1,3 +1,4 @@
+import { Loader2 } from "lucide-react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
@@ -8,8 +9,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading && !user) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
-        Loading session…
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 px-4 text-muted">
+        <Loader2 className="size-8 animate-spin text-accent" aria-hidden />
+        <p className="text-sm">Loading your session…</p>
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { Field } from "./ui/Field";
 import { Input } from "./ui/Input";
 import { Select } from "./ui/Select";
 import { Textarea } from "./ui/Textarea";
+import { Card } from "./ui/Card";
 
 interface Props {
   initial?: Partial<Issue>;
@@ -32,61 +33,51 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handle} style={{ maxWidth: "640px" }}>
-      <Field label="Title">
-        <Input
-          name="title"
-          required
-          maxLength={200}
-          defaultValue={initial?.title}
-          autoComplete="off"
-        />
-      </Field>
-      <Field label="Description">
-        <Textarea name="description" required maxLength={10000} defaultValue={initial?.description} />
-      </Field>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "0.5rem",
-        }}
-      >
-        <Field label="Status">
-          <Select name="status" defaultValue={initial?.status ?? "open"}>
-            <option value="open">Open</option>
-            <option value="in_progress">In progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </Select>
+    <Card className="max-w-2xl p-5 sm:p-7">
+      <form onSubmit={handle} className="space-y-4">
+        <Field label="Title">
+          <Input name="title" required maxLength={200} defaultValue={initial?.title} autoComplete="off" />
         </Field>
-        <Field label="Priority">
-          <Select name="priority" defaultValue={initial?.priority ?? "medium"}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-          </Select>
+        <Field label="Description">
+          <Textarea name="description" required maxLength={10000} defaultValue={initial?.description} />
         </Field>
-        <Field label="Severity">
-          <Select name="severity" defaultValue={initial?.severity ?? "medium"}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </Select>
-        </Field>
-      </div>
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.25rem" }}>
-        <Button type="submit" variant="primary">
-          {submitLabel}
-        </Button>
-        {onCancel ? (
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field label="Status">
+            <Select name="status" defaultValue={initial?.status ?? "open"}>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </Select>
+          </Field>
+          <Field label="Priority">
+            <Select name="priority" defaultValue={initial?.priority ?? "medium"}>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </Select>
+          </Field>
+          <Field label="Severity">
+            <Select name="severity" defaultValue={initial?.severity ?? "medium"}>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </Select>
+          </Field>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button type="submit" variant="primary">
+            {submitLabel}
           </Button>
-        ) : null}
-      </div>
-    </form>
+          {onCancel ? (
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          ) : null}
+        </div>
+      </form>
+    </Card>
   );
 }

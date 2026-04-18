@@ -1,82 +1,61 @@
-:root {
-  color-scheme: dark;
-  --bg: #0c0e12;
-  --bg-elevated: #141820;
-  --bg-muted: #1a202c;
-  --border: #2d3748;
-  --text: #e8ecf4;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-dim: #0ea5e966;
-  --danger: #f87171;
-  --success: #4ade80;
-  --warning: #fbbf24;
+@import "tailwindcss";
 
-  --status-open: #38bdf8;
-  --status-progress: #a78bfa;
-  --status-resolved: #4ade80;
-  --status-closed: #64748b;
-
-  --priority-low: #94a3b8;
-  --priority-medium: #fbbf24;
-  --priority-high: #fb923c;
-  --priority-urgent: #f87171;
-
-  --radius: 10px;
-  --font-sans: "DM Sans", system-ui, sans-serif;
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+
+  --color-surface-950: #090b10;
+  --color-surface-900: #0f1218;
+  --color-surface-850: #141820;
+  --color-surface-800: #1a202c;
+  --color-border: #2d3748;
+  --color-foreground: #e8ecf4;
+  --color-muted: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-accent-muted: #0ea5e9;
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+
+  --color-status-open: #38bdf8;
+  --color-status-progress: #a78bfa;
+  --color-status-resolved: #4ade80;
+  --color-status-closed: #64748b;
+
+  --shadow-elevated: 0 22px 48px -28px rgb(0 0 0 / 0.75);
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
 
-html,
-body,
-#root {
-  height: 100%;
-}
+  body {
+    @apply min-h-screen bg-surface-950 font-sans text-foreground antialiased;
+    background-image:
+      radial-gradient(1200px 800px at 10% -10%, rgb(26 35 64 / 0.55) 0%, transparent 55%),
+      radial-gradient(900px 600px at 100% 0%, rgb(15 58 69 / 0.4) 0%, transparent 50%);
+  }
 
-body {
-  margin: 0;
-  font-family: var(--font-sans);
-  background: radial-gradient(1200px 800px at 10% -10%, #1a2340 0%, transparent 55%),
-    radial-gradient(900px 600px at 100% 0%, #0f3a45 0%, transparent 50%),
-    var(--bg);
-  color: var(--text);
-  line-height: 1.5;
-}
+  #root {
+    @apply min-h-screen;
+  }
 
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
+  a:not([class*="rounded"]) {
+    @apply text-accent underline-offset-4 transition-colors hover:text-sky-300;
+  }
 
-a:hover {
-  text-decoration: underline;
-}
+  input,
+  select,
+  textarea {
+    @apply text-foreground;
+  }
 
-button {
-  font-family: inherit;
-}
-
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  .sr-only {
+    @apply absolute h-px w-px overflow-hidden p-0 whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
 }

@@ -1,8 +1,16 @@
+import {
+  ArrowLeft,
+  CheckCircle2,
+  DoorClosed,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Modal } from "../components/Modal";
 import { Page } from "../components/Page";
 import { PriorityBadge, SeverityBadge, StatusBadge } from "../components/IssueBadges";
+import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { useIssueStore } from "../store/issueStore";
 
@@ -50,14 +58,21 @@ export function IssueDetailPage() {
   }
 
   if (pending && !issue) {
-    return <Page title="Issue">Loading…</Page>;
+    return (
+      <Page title="Issue">
+        <p className="text-muted">Loading…</p>
+      </Page>
+    );
   }
 
   if (error && !issue) {
     return (
       <Page title="Issue">
-        <p style={{ color: "var(--danger)" }}>{error}</p>
-        <Link to="/">Back to list</Link>
+        <p className="mb-4 text-danger">{error}</p>
+        <Link to="/" className="inline-flex items-center gap-2 font-medium text-accent no-underline hover:underline">
+          <ArrowLeft className="size-4" aria-hidden />
+          Back to list
+        </Link>
       </Page>
     );
   }
@@ -72,52 +87,53 @@ export function IssueDetailPage() {
       subtitle={issue.updatedAt ? `Updated ${new Date(issue.updatedAt).toLocaleString()}` : undefined}
       actions={
         <>
-          <Button variant="secondary" type="button" disabled={pending} onClick={() => setConfirmDelete(true)}>
+          <Button variant="ghost" type="button" disabled={pending} className="gap-2 text-red-300 hover:text-red-200" onClick={() => setConfirmDelete(true)}>
+            <Trash2 className="size-4" aria-hidden />
             Delete
           </Button>
           {issue.status !== "resolved" ? (
-            <Button variant="secondary" type="button" disabled={pending} onClick={() => setConfirmResolve(true)}>
-              Mark resolved
+            <Button variant="secondary" type="button" disabled={pending} className="gap-2" onClick={() => setConfirmResolve(true)}>
+              <CheckCircle2 className="size-4" aria-hidden />
+              Resolve
             </Button>
           ) : null}
           {issue.status !== "closed" ? (
-            <Button variant="secondary" type="button" disabled={pending} onClick={() => setConfirmClose(true)}>
+            <Button variant="secondary" type="button" disabled={pending} className="gap-2" onClick={() => setConfirmClose(true)}>
+              <DoorClosed className="size-4" aria-hidden />
               Close
             </Button>
           ) : null}
-          <Button variant="primary" type="button" disabled={pending} onClick={() => navigate(`/issues/${issue.id}/edit`)}>
+          <Button variant="primary" type="button" disabled={pending} className="gap-2" onClick={() => navigate(`/issues/${issue.id}/edit`)}>
+            <Pencil className="size-4" aria-hidden />
             Edit
           </Button>
         </>
       }
     >
       {error ? (
-        <p style={{ color: "var(--danger)" }} role="alert">
+        <div className="mb-4 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-200" role="alert">
           {error}
-        </p>
+        </div>
       ) : null}
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+      <div className="mb-4 flex flex-wrap gap-2">
         <StatusBadge status={issue.status} />
         <PriorityBadge priority={issue.priority} />
         <SeverityBadge severity={issue.severity} />
       </div>
 
-      <article
-        style={{
-          whiteSpace: "pre-wrap",
-          lineHeight: 1.65,
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border)",
-          borderRadius: "12px",
-          padding: "1.1rem 1.25rem",
-        }}
-      >
-        {issue.description}
-      </article>
+      <Card className="p-5 sm:p-6">
+        <article className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-foreground/95">{issue.description}</article>
+      </Card>
 
-      <p style={{ marginTop: "1.25rem" }}>
-        <Link to="/">← Back to issues</Link>
+      <p className="mt-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-accent no-underline transition-colors hover:text-sky-300 hover:underline"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          Back to issues
+        </Link>
       </p>
 
       <Modal

@@ -1,7 +1,22 @@
+import {
+  Activity,
+  AlertCircle,
+  Archive,
+  CheckCircle2,
+  CircleDot,
+  FileJson,
+  Loader2,
+  Plus,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { FaFileCsv } from "react-icons/fa6";
+import { VscJson } from "react-icons/vsc";
 import { Link, useNavigate } from "react-router-dom";
 import { Page } from "../components/Page";
 import { PriorityBadge, StatusBadge } from "../components/IssueBadges";
+import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
@@ -9,22 +24,27 @@ import { Select } from "../components/ui/Select";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import * as issuesApi from "../api/issues";
 import { useIssueStore } from "../store/issueStore";
+import { cn } from "../lib/cn";
 
-function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
+function StatCard({
+  label,
+  value,
+  accentClass,
+  icon: Icon,
+}: {
+  label: string;
+  value: number;
+  accentClass: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
-    <div
-      style={{
-        flex: "1 1 140px",
-        background: "var(--bg-elevated)",
-        border: "1px solid var(--border)",
-        borderRadius: "12px",
-        padding: "1rem 1.1rem",
-        boxShadow: "var(--shadow)",
-      }}
-    >
-      <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>{label}</div>
-      <div style={{ fontSize: "1.65rem", fontWeight: 700, color: accent }}>{value}</div>
-    </div>
+    <Card className="group flex min-w-[140px] flex-1 flex-col gap-1 p-4 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[0.75rem] font-medium uppercase tracking-wider text-muted">{label}</span>
+        <Icon className={cn("size-4 opacity-70 transition-opacity group-hover:opacity-100", accentClass)} aria-hidden />
+      </div>
+      <span className={cn("text-3xl font-bold tabular-nums tracking-tight", accentClass)}>{value}</span>
+    </Card>
   );
 }
 
@@ -70,168 +90,148 @@ export function IssuesListPage() {
   return (
     <Page
       title="Issues"
-      subtitle="Create, filter, and triage work in one place. Search waits briefly while you type to avoid extra requests."
+      subtitle="Create, filter, and triage work in one place. Search pauses briefly while you type so the API is not called on every keystroke."
       actions={
         <>
           <Button
             variant="secondary"
             type="button"
             disabled={exportDisabled}
+            className="gap-2 font-medium"
             onClick={() => void issuesApi.downloadExport({ ...activeFilters, format: "csv" })}
           >
+            <FaFileCsv className="size-4 text-emerald-400" aria-hidden />
             Export CSV
           </Button>
           <Button
             variant="secondary"
             type="button"
             disabled={exportDisabled}
+            className="gap-2 font-medium"
             onClick={() => void issuesApi.downloadExport({ ...activeFilters, format: "json" })}
           >
+            <VscJson className="size-4 text-amber-300" aria-hidden />
             Export JSON
           </Button>
-          <Button variant="primary" type="button" onClick={() => navigate("/issues/new")}>
+          <Button variant="primary" type="button" className="gap-2 shadow-sky-500/20" onClick={() => navigate("/issues/new")}>
+            <Plus className="size-4" aria-hidden />
             New issue
           </Button>
         </>
       }
     >
-      <section
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <StatCard label="Open" value={stats?.open ?? 0} accent="var(--status-open)" />
-        <StatCard label="In progress" value={stats?.in_progress ?? 0} accent="var(--status-progress)" />
-        <StatCard label="Resolved" value={stats?.resolved ?? 0} accent="var(--status-resolved)" />
-        <StatCard label="Closed" value={stats?.closed ?? 0} accent="var(--status-closed)" />
+      <section className="mb-6 flex flex-wrap gap-3">
+        <StatCard label="Open" value={stats?.open ?? 0} accentClass="text-sky-400" icon={CircleDot} />
+        <StatCard label="In progress" value={stats?.in_progress ?? 0} accentClass="text-violet-400" icon={Activity} />
+        <StatCard label="Resolved" value={stats?.resolved ?? 0} accentClass="text-emerald-400" icon={CheckCircle2} />
+        <StatCard label="Closed" value={stats?.closed ?? 0} accentClass="text-slate-400" icon={Archive} />
       </section>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "0.75rem",
-          marginBottom: "1.25rem",
-          alignItems: "end",
-        }}
-      >
-        <Field label="Search title or description">
-          <Input
-            value={qInput}
-            onChange={(e) => setQInput(e.target.value)}
-            placeholder="Type to filter…"
-            aria-label="Search issues"
-          />
-        </Field>
-        <Field label="Status">
-          <Select
-            value={filters.status}
-            onChange={(e) => setFilters({ status: e.target.value })}
-            aria-label="Filter by status"
-          >
-            <option value="">All</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </Select>
-        </Field>
-        <Field label="Priority">
-          <Select
-            value={filters.priority}
-            onChange={(e) => setFilters({ priority: e.target.value })}
-            aria-label="Filter by priority"
-          >
-            <option value="">All</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-          </Select>
-        </Field>
-        <Field label="Severity">
-          <Select
-            value={filters.severity}
-            onChange={(e) => setFilters({ severity: e.target.value })}
-            aria-label="Filter by severity"
-          >
-            <option value="">All</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </Select>
-        </Field>
-      </div>
+      <Card className="mb-6 p-4 sm:p-5">
+        <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted">
+          <SlidersHorizontal className="size-4" aria-hidden />
+          Filters
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="Search title or description" icon={Search}>
+            <Input
+              value={qInput}
+              onChange={(e) => setQInput(e.target.value)}
+              placeholder="Keywords…"
+              aria-label="Search issues"
+            />
+          </Field>
+          <Field label="Status">
+            <Select
+              value={filters.status}
+              onChange={(e) => setFilters({ status: e.target.value })}
+              aria-label="Filter by status"
+            >
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </Select>
+          </Field>
+          <Field label="Priority">
+            <Select
+              value={filters.priority}
+              onChange={(e) => setFilters({ priority: e.target.value })}
+              aria-label="Filter by priority"
+            >
+              <option value="">All priorities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </Select>
+          </Field>
+          <Field label="Severity">
+            <Select
+              value={filters.severity}
+              onChange={(e) => setFilters({ severity: e.target.value })}
+              aria-label="Filter by severity"
+            >
+              <option value="">All severities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </Select>
+          </Field>
+        </div>
+      </Card>
 
       {error ? (
-        <p style={{ color: "var(--danger)" }} role="alert">
+        <div
+          className="mb-4 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
+          role="alert"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
           {error}
-        </p>
+        </div>
       ) : null}
 
       {loading ? (
-        <p style={{ color: "var(--text-muted)" }}>Loading issues…</p>
+        <div className="flex items-center gap-2 text-sm text-muted">
+          <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+          Loading issues…
+        </div>
       ) : null}
 
       {!loading && list && list.items.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>No issues match your filters. Try adjusting search or create a new issue.</p>
+        <p className="text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
       ) : null}
 
-      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.75rem" }}>
+      <ul className="mt-4 grid list-none gap-3 p-0">
         {list?.items.map((issue) => (
           <li key={issue.id}>
             <Link
               to={`/issues/${issue.id}`}
-              style={{
-                display: "block",
-                padding: "1rem 1.1rem",
-                borderRadius: "12px",
-                border: "1px solid var(--border)",
-                background: "var(--bg-elevated)",
-                textDecoration: "none",
-                color: "inherit",
-                transition: "border-color 0.15s ease, transform 0.15s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.transform = "none";
-              }}
+              className="group block rounded-xl border border-border/90 bg-surface-850/50 p-4 no-underline shadow-sm transition-all hover:border-accent/40 hover:bg-surface-850 hover:shadow-md"
             >
-              <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
-                <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>{issue.title}</div>
-                <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", alignItems: "center" }}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-white">
+                  {issue.title}
+                </h2>
+                <div className="flex flex-wrap gap-2">
                   <StatusBadge status={issue.status} />
                   <PriorityBadge priority={issue.priority} />
                 </div>
               </div>
-              <p
-                style={{
-                  margin: "0.55rem 0 0",
-                  color: "var(--text-muted)",
-                  fontSize: "0.92rem",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {issue.description}
-              </p>
+              <p className="mt-2 line-clamp-2 text-[0.92rem] leading-relaxed text-muted">{issue.description}</p>
+              <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-accent/90 opacity-0 transition-opacity group-hover:opacity-100">
+                <FileJson className="size-3.5" aria-hidden />
+                View details
+              </div>
             </Link>
           </li>
         ))}
       </ul>
 
       {list && list.totalPages > 1 ? (
-        <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "1.5rem" }}>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
           <Button
             variant="secondary"
             type="button"
@@ -240,8 +240,9 @@ export function IssuesListPage() {
           >
             Previous
           </Button>
-          <span style={{ alignSelf: "center", color: "var(--text-muted)", fontSize: "0.9rem" }}>
-            Page {list.page} of {list.totalPages} · {list.total} total
+          <span className="px-2 text-sm text-muted">
+            Page {list.page} of {list.totalPages}
+            <span className="text-muted/70"> · {list.total} total</span>
           </span>
           <Button
             variant="secondary"

@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { IssueForm } from "../components/IssueForm";
@@ -28,14 +29,24 @@ export function IssueEditPage() {
   if (!id) return null;
 
   if (loading) {
-    return <Page title="Edit issue">Loading…</Page>;
+    return (
+      <Page title="Edit issue">
+        <p className="text-muted">Loading…</p>
+      </Page>
+    );
   }
 
   if (error || !issue) {
     return (
       <Page title="Edit issue">
-        <p style={{ color: "var(--danger)" }}>{error || "Issue not found."}</p>
-        <Link to="/">Back to list</Link>
+        <p className="mb-4 text-danger">{error || "Issue not found."}</p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 font-medium text-accent no-underline hover:underline"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          Back to list
+        </Link>
       </Page>
     );
   }
@@ -43,9 +54,9 @@ export function IssueEditPage() {
   return (
     <Page title="Edit issue" subtitle="Adjust details and save when you are ready.">
       {error ? (
-        <p style={{ color: "var(--danger)" }} role="alert">
+        <div className="mb-4 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-100" role="alert">
           {error}
-        </p>
+        </div>
       ) : null}
       <IssueForm
         initial={issue}
