@@ -59,7 +59,7 @@ export function Page({
         </div>
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-[max(3rem,env(safe-area-inset-bottom))] pt-4 sm:pb-[max(4rem,env(safe-area-inset-bottom))] sm:pt-5",
+            "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain pb-[max(3rem,env(safe-area-inset-bottom))] pt-4 sm:pb-[max(4rem,env(safe-area-inset-bottom))] sm:pt-5",
           )}
         >
           {children}
@@ -71,7 +71,7 @@ export function Page({
   return (
     <div
       className={cn(
-        "flex min-h-0 w-full max-w-full flex-1 flex-col pb-[max(3rem,env(safe-area-inset-bottom))] pt-6 sm:pb-[max(4rem,env(safe-area-inset-bottom))] sm:pt-8",
+        "app-scroll flex min-h-0 w-full max-w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-[max(3rem,env(safe-area-inset-bottom))] pt-6 sm:pb-[max(4rem,env(safe-area-inset-bottom))] sm:pt-8",
         pagePadX,
         className,
       )}

@@ -72,7 +72,7 @@ function BoardColumn({
         <div
           ref={setNodeRef}
           className={cn(
-            "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-2 [-webkit-overflow-scrolling:touch]",
+            "app-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-2 [-webkit-overflow-scrolling:touch]",
             issues.length === 0 && "min-h-[120px] items-center justify-center"
           )}
         >

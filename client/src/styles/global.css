@@ -35,19 +35,20 @@
 }
 
 @layer base {
+  /* Single app shell — no document scroll (avoids full-height scrollbar beside the header). */
   html {
-    @apply min-h-[100vh] scroll-smooth;
+    @apply h-full overflow-hidden scroll-smooth;
   }
 
   body {
-    @apply min-h-[100vh] bg-surface-950 font-sans text-foreground antialiased;
+    @apply h-full min-h-0 overflow-hidden bg-surface-950 font-sans text-foreground antialiased;
     background-image:
       radial-gradient(1200px 800px at 10% -10%, rgb(140 255 46 / 0.12) 0%, transparent 55%),
       radial-gradient(900px 600px at 100% 0%, rgb(140 255 46 / 0.08) 0%, transparent 50%);
   }
 
   #root {
-    @apply flex min-h-[100vh] w-full flex-col overflow-x-hidden;
+    @apply flex h-full min-h-0 w-full flex-col overflow-hidden;
   }
 
   a:not([class*="rounded"]) {
@@ -65,36 +66,38 @@
     clip: rect(0, 0, 0, 0);
   }
 
-  /* Firefox */
-  * {
+  /*
+   * Themed scrollbars only where `.app-scroll` is applied (e.g. issue list pane).
+   * Avoids a window-level scrollbar track aligned with the nav / Sign out row.
+   */
+  .app-scroll {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
 
-  /* Chromium / Safari / Edge */
-  *::-webkit-scrollbar {
+  .app-scroll::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
 
-  *::-webkit-scrollbar-track {
+  .app-scroll::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
     border-radius: 9999px;
   }
 
-  *::-webkit-scrollbar-thumb {
+  .app-scroll::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 9999px;
     border: 2px solid var(--scrollbar-track);
     background-clip: padding-box;
   }
 
-  *::-webkit-scrollbar-thumb:hover {
+  .app-scroll::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
     border-color: var(--scrollbar-track);
   }
 
-  *::-webkit-scrollbar-corner {
+  .app-scroll::-webkit-scrollbar-corner {
     background: var(--scrollbar-track);
   }
 }

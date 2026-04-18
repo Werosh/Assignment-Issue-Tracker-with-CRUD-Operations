@@ -199,7 +199,7 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
             </div>
 
             {expanded ? (
-              <div id={id} className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
+              <div id={id} className="app-scroll overflow-x-auto [-webkit-overflow-scrolling:touch]">
                 <table className="w-full min-w-[640px] border-collapse text-left text-[0.85rem] sm:text-[0.9rem]">
                   <thead>
                     <tr className="border-b border-border/80 bg-surface-950/80 text-[0.65rem] font-semibold uppercase tracking-wider text-muted sm:text-[0.7rem]">
