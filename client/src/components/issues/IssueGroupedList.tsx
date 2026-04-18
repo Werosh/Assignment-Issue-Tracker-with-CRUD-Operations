@@ -1,10 +1,27 @@
-import { CalendarDays, ChevronDown, ChevronRight, CircleDot, Flag, Plus } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronRight,
+  CircleDot,
+  Flag,
+  Plus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Issue, IssuePriority, IssueStatus, IssueSeverity } from "../../types/issue";
+import type {
+  Issue,
+  IssuePriority,
+  IssueStatus,
+  IssueSeverity,
+} from "../../types/issue";
 import { cn } from "../../lib/cn";
 
-const STATUS_ORDER: IssueStatus[] = ["open", "in_progress", "resolved", "closed"];
+const STATUS_ORDER: IssueStatus[] = [
+  "open",
+  "in_progress",
+  "resolved",
+  "closed",
+];
 
 const STATUS_LABEL: Record<IssueStatus, string> = {
   open: "OPEN",
@@ -36,7 +53,11 @@ function sortByUpdated(a: Issue, b: Issue) {
 function formatShortDate(iso?: string) {
   if (!iso) return "—";
   try {
-    return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(iso));
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(iso));
   } catch {
     return "—";
   }
@@ -54,7 +75,7 @@ function PriorityCell({ priority }: { priority: IssuePriority }) {
           isUrgent && "text-red-400",
           isHigh && "text-amber-400",
           priority === "medium" && "text-muted",
-          priority === "low" && "text-muted/60"
+          priority === "low" && "text-muted/60",
         )}
         aria-hidden
       />
@@ -63,7 +84,7 @@ function PriorityCell({ priority }: { priority: IssuePriority }) {
           "text-[0.8rem] font-medium",
           isUrgent && "text-red-300",
           isHigh && "text-amber-300/90",
-          (priority === "medium" || priority === "low") && "text-muted"
+          (priority === "medium" || priority === "low") && "text-muted",
         )}
       >
         {label}
@@ -105,7 +126,7 @@ export function IssueGroupedList({ issues }: Props) {
   if (issues.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-3 pb-1">
       {STATUS_ORDER.map((status) => {
         const groupIssues = grouped[status];
         const expanded = open[status];
@@ -113,66 +134,89 @@ export function IssueGroupedList({ issues }: Props) {
         return (
           <section
             key={status}
-            className="overflow-hidden rounded-xl border border-border/90 bg-surface-900/40"
+            className="overflow-hidden rounded-lg border border-border/90 bg-surface-900/40"
             aria-labelledby={`${id}-heading`}
           >
-            <div className="flex items-center gap-2 border-b border-border/80 bg-surface-850/50 px-3 py-2.5 sm:px-4">
+            <div className="flex items-center gap-2 border-b border-border/80 bg-surface-850/50 px-2.5 py-2 sm:px-3">
               <button
                 type="button"
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-white/5 hover:text-foreground sm:size-8"
                 aria-expanded={expanded}
                 aria-controls={id}
                 onClick={() => setOpen((o) => ({ ...o, [status]: !o[status] }))}
               >
-                {expanded ? <ChevronDown className="size-4" aria-hidden /> : <ChevronRight className="size-4" aria-hidden />}
-                <span className="sr-only">{expanded ? "Collapse" : "Expand"} {STATUS_LABEL[status]}</span>
+                {expanded ? (
+                  <ChevronDown className="size-4" aria-hidden />
+                ) : (
+                  <ChevronRight className="size-4" aria-hidden />
+                )}
+                <span className="sr-only">
+                  {expanded ? "Collapse" : "Expand"} {STATUS_LABEL[status]}
+                </span>
               </button>
-              <h2 id={`${id}-heading`} className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-wide text-foreground">
-                <span className="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-0.5 text-accent">
+              <h2
+                id={`${id}-heading`}
+                className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wide text-foreground sm:gap-2 sm:text-[0.8rem]"
+              >
+                <span className="rounded-full border border-accent/35 bg-accent/10 px-2 py-0.5 text-accent sm:px-2.5">
                   {STATUS_LABEL[status]}
                 </span>
-                <span className="font-mono text-[0.75rem] tabular-nums text-muted">{groupIssues.length}</span>
+                <span className="font-mono text-[0.7rem] tabular-nums text-muted sm:text-[0.75rem]">
+                  {groupIssues.length}
+                </span>
               </h2>
               <button
                 type="button"
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-white/5 hover:text-accent"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-white/5 hover:text-accent sm:size-8"
                 title="New issue"
                 onClick={() => navigate("/?new=1")}
               >
-                <Plus className="size-4" aria-hidden />
+                <Plus className="size-3.5 sm:size-4" aria-hidden />
               </button>
             </div>
 
             {expanded ? (
-              <div
-                id={id}
-                className="max-h-[min(420px,48vh)] overflow-x-auto overflow-y-auto [-webkit-overflow-scrolling:touch]"
-              >
-                <table className="w-full min-w-[520px] border-collapse text-left text-[0.9rem]">
+              <div id={id} className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                <table className="w-full min-w-[520px] border-collapse text-left text-[0.85rem] sm:text-[0.9rem]">
                   <thead>
-                    <tr className="border-b border-border/80 bg-surface-950/80 text-[0.7rem] font-semibold uppercase tracking-wider text-muted">
-                      <th className="sticky top-0 z-10 bg-surface-950/95 px-3 py-2.5 pl-4 backdrop-blur-sm sm:px-4">Name</th>
-                      <th className="sticky top-0 z-10 w-[130px] bg-surface-950/95 px-2 py-2.5 backdrop-blur-sm">Updated</th>
-                      <th className="sticky top-0 z-10 w-[120px] bg-surface-950/95 px-3 py-2.5 pr-4 text-right backdrop-blur-sm sm:pr-5">Priority</th>
+                    <tr className="border-b border-border/80 bg-surface-950/80 text-[0.65rem] font-semibold uppercase tracking-wider text-muted sm:text-[0.7rem]">
+                      <th className="bg-surface-950/95 px-2 py-2 pl-3 sm:px-3 sm:py-2.5 sm:pl-4">
+                        Name
+                      </th>
+                      <th className="w-[130px] bg-surface-950/95 px-2 py-2 sm:py-2.5">
+                        Updated
+                      </th>
+                      <th className="w-[120px] bg-surface-950/95 px-2 py-2 pr-3 text-right sm:px-3 sm:py-2.5 sm:pr-5">
+                        Priority
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {groupIssues.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-muted">
+                        <td
+                          colSpan={3}
+                          className="px-4 py-8 text-center text-sm text-muted"
+                        >
                           No issues in this status.
                         </td>
                       </tr>
                     ) : (
                       groupIssues.map((issue) => (
-                        <tr key={issue.id} className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-white/3">
+                        <tr
+                          key={issue.id}
+                          className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-white/3"
+                        >
                           <td className="align-middle px-3 py-2.5 pl-4 sm:px-4">
                             <Link
                               to={`/issues/${issue.id}`}
                               className="group flex min-w-0 items-start gap-2.5 no-underline"
                             >
                               <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-border/80 bg-surface-800 text-muted">
-                                <CircleDot className="size-3.5 text-accent/90" aria-hidden />
+                                <CircleDot
+                                  className="size-3.5 text-accent/90"
+                                  aria-hidden
+                                />
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="block font-medium leading-snug text-foreground group-hover:text-accent">
@@ -188,7 +232,10 @@ export function IssueGroupedList({ issues }: Props) {
                           </td>
                           <td className="align-middle px-2 text-muted">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                              <CalendarDays className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                              <CalendarDays
+                                className="size-3.5 shrink-0 opacity-70"
+                                aria-hidden
+                              />
                               {formatShortDate(issue.updatedAt)}
                             </span>
                           </td>

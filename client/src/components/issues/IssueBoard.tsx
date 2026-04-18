@@ -54,27 +54,33 @@ function BoardColumn({
   });
 
   return (
-    <div className="flex w-[min(100%,280px)] shrink-0 flex-col lg:min-w-0 lg:w-0 lg:max-w-none lg:flex-1">
-      <div className="mb-2 flex items-center justify-between gap-2 px-1">
+    <div className="flex h-full min-h-0 w-[min(100%,280px)] shrink-0 flex-col lg:min-w-0 lg:w-0 lg:max-w-none lg:flex-1">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2 px-1">
         <h3 className="text-[0.8rem] font-semibold uppercase tracking-wide text-muted">{title}</h3>
         <span className="rounded-md bg-surface-800 px-2 py-0.5 font-mono text-xs text-muted">{issues.length}</span>
       </div>
-      <div ref={setNodeRef} className="flex min-h-[min(56vh,480px)] flex-1 flex-col lg:min-h-[min(62vh,640px)]">
-        <Card
+      <Card
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-hidden p-0",
+          isOver && "border-accent/50 ring-1 ring-accent/30"
+        )}
+      >
+        <div
+          ref={setNodeRef}
           className={cn(
-            "flex h-full min-h-[inherit] flex-col gap-2 p-2",
-            isOver && "border-accent/50 ring-1 ring-accent/30"
+            "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-2 [-webkit-overflow-scrolling:touch]",
+            issues.length === 0 && "min-h-[120px] items-center justify-center"
           )}
         >
           {issues.length === 0 ? (
-            <p className="m-auto px-2 text-center text-xs text-muted/80">Drop issues here</p>
+            <p className="px-2 text-center text-xs text-muted/80">Drop issues here</p>
           ) : (
             issues.map((issue) => (
               <DraggableIssueCard key={issue.id} issue={issue} suppressLinkNavUntilRef={suppressLinkNavUntilRef} />
             ))
           )}
-        </Card>
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -143,7 +149,7 @@ function DraggableIssueCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-lg border border-border/90 bg-surface-900/90 shadow-sm",
+        "shrink-0 rounded-lg border border-border/90 bg-surface-900/90 shadow-sm",
         !isDragging && "transition-shadow"
       )}
     >
@@ -221,7 +227,7 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -229,7 +235,7 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
         onDragCancel={onDragCancel}
         onDragEnd={(e) => void onDragEnd(e)}
       >
-        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-4 pt-1 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] sm:gap-4 lg:h-full lg:overflow-x-visible lg:pb-2">
+        <div className="flex h-full min-h-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden pb-2 pt-1 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] sm:gap-4 lg:min-h-0 lg:overflow-x-auto lg:pb-2">
           {COLUMNS.map((col) => (
             <BoardColumn
               key={col.id}

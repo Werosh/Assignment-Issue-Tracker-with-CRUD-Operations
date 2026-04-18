@@ -10,7 +10,7 @@ export function Layout() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-[100vh] min-h-0 flex-col overflow-hidden">
       <header className="sticky top-0 z-40 w-full shrink-0 border-b border-border/80 bg-surface-950/75 backdrop-blur-xl">
         <div className="flex w-full items-center justify-between gap-3 px-4 pb-3.5 pt-[max(0.875rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
           <Link to="/" className={cn("flex items-center gap-2.5 no-underline transition-opacity hover:opacity-90")}>
@@ -54,7 +54,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <main className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+      <main className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
         <Outlet />
       </main>
     </div>
