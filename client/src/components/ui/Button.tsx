@@ -5,13 +5,13 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-b from-sky-400 to-sky-600 text-slate-950 shadow-md shadow-sky-500/15 hover:from-sky-300 hover:to-sky-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
+    "bg-gradient-to-b from-accent to-accent-muted text-on-accent shadow-md shadow-accent/20 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
   secondary:
-    "border border-border bg-surface-800 text-foreground hover:bg-surface-850 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
+    "border border-border bg-surface-800 text-foreground hover:bg-surface-850 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
   ghost:
-    "border border-transparent text-muted hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
+    "border border-transparent text-muted hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
   danger:
-    "bg-gradient-to-b from-red-400 to-red-600 text-slate-950 shadow-md shadow-red-500/10 hover:from-red-300 hover:to-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
+    "bg-gradient-to-b from-red-400 to-red-600 text-white shadow-md shadow-red-500/10 hover:from-red-300 hover:to-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950",
 };
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {

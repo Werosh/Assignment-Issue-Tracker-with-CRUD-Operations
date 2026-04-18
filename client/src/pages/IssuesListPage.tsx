@@ -153,7 +153,7 @@ export function IssuesListPage() {
             className="gap-2 font-medium"
             onClick={() => void issuesApi.downloadExport({ ...activeFilters, format: "csv" })}
           >
-            <FaFileCsv className="size-4 text-emerald-400" aria-hidden />
+            <FaFileCsv className="size-4 text-accent" aria-hidden />
             Export CSV
           </Button>
           <Button
@@ -163,10 +163,10 @@ export function IssuesListPage() {
             className="gap-2 font-medium"
             onClick={() => void issuesApi.downloadExport({ ...activeFilters, format: "json" })}
           >
-            <VscJson className="size-4 text-amber-300" aria-hidden />
+            <VscJson className="size-4 text-muted" aria-hidden />
             Export JSON
           </Button>
-          <Button variant="primary" type="button" className="gap-2 shadow-sky-500/20" onClick={() => navigate("/issues/new")}>
+          <Button variant="primary" type="button" className="gap-2 shadow-accent/25" onClick={() => navigate("/issues/new")}>
             <Plus className="size-4" aria-hidden />
             New issue
           </Button>
@@ -174,10 +174,10 @@ export function IssuesListPage() {
       }
     >
       <section className="mb-6 flex flex-wrap gap-3">
-        <StatCard label="Open" value={stats?.open ?? 0} accentClass="text-sky-400" icon={CircleDot} />
-        <StatCard label="In progress" value={stats?.in_progress ?? 0} accentClass="text-violet-400" icon={Activity} />
-        <StatCard label="Resolved" value={stats?.resolved ?? 0} accentClass="text-emerald-400" icon={CheckCircle2} />
-        <StatCard label="Closed" value={stats?.closed ?? 0} accentClass="text-slate-400" icon={Archive} />
+        <StatCard label="Open" value={stats?.open ?? 0} accentClass="text-accent" icon={CircleDot} />
+        <StatCard label="In progress" value={stats?.in_progress ?? 0} accentClass="text-foreground" icon={Activity} />
+        <StatCard label="Resolved" value={stats?.resolved ?? 0} accentClass="text-[#b8ff6a]" icon={CheckCircle2} />
+        <StatCard label="Closed" value={stats?.closed ?? 0} accentClass="text-muted" icon={Archive} />
       </section>
 
       <Card className="mb-6 p-4 sm:p-5">

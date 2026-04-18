@@ -161,7 +161,7 @@ export function IssueDetailPage() {
       <p className="mt-6">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-accent no-underline transition-colors hover:text-sky-300 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-medium text-accent no-underline transition-colors hover:text-[#b8ff6a] hover:underline"
         >
           <ArrowLeft className="size-4" aria-hidden />
           Back to issues

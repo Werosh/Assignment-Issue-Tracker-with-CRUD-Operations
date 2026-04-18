@@ -108,7 +108,7 @@ function IssueCardFace({
           }
         }}
       >
-        <p className="text-sm font-semibold leading-snug text-foreground hover:text-sky-200">{issue.title}</p>
+        <p className="text-sm font-semibold leading-snug text-foreground hover:text-accent">{issue.title}</p>
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{issue.description}</p>
         <div className="mt-2">
           <PriorityBadge priority={issue.priority} />

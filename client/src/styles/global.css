@@ -4,23 +4,24 @@
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-surface-950: #090b10;
-  --color-surface-900: #0f1218;
-  --color-surface-850: #141820;
-  --color-surface-800: #1a202c;
-  --color-border: #2d3748;
-  --color-foreground: #e8ecf4;
-  --color-muted: #94a3b8;
-  --color-accent: #38bdf8;
-  --color-accent-muted: #0ea5e9;
+  --color-surface-950: #171717;
+  --color-surface-900: #1c1c1c;
+  --color-surface-850: #212121;
+  --color-surface-800: #262626;
+  --color-border: #333333;
+  --color-foreground: #ffffff;
+  --color-muted: #a3a3a3;
+  --color-accent: #8cff2e;
+  --color-accent-muted: #6fcc22;
+  --color-on-accent: #171717;
   --color-danger: #f87171;
-  --color-success: #4ade80;
+  --color-success: #8cff2e;
   --color-warning: #fbbf24;
 
-  --color-status-open: #38bdf8;
-  --color-status-progress: #a78bfa;
-  --color-status-resolved: #4ade80;
-  --color-status-closed: #64748b;
+  --color-status-open: #8cff2e;
+  --color-status-progress: #ffffff;
+  --color-status-resolved: #b8ff6a;
+  --color-status-closed: #737373;
 
   --shadow-elevated: 0 22px 48px -28px rgb(0 0 0 / 0.75);
 
@@ -36,8 +37,8 @@
   body {
     @apply min-h-screen bg-surface-950 font-sans text-foreground antialiased;
     background-image:
-      radial-gradient(1200px 800px at 10% -10%, rgb(26 35 64 / 0.55) 0%, transparent 55%),
-      radial-gradient(900px 600px at 100% 0%, rgb(15 58 69 / 0.4) 0%, transparent 50%);
+      radial-gradient(1200px 800px at 10% -10%, rgb(140 255 46 / 0.12) 0%, transparent 55%),
+      radial-gradient(900px 600px at 100% 0%, rgb(140 255 46 / 0.08) 0%, transparent 50%);
   }
 
   #root {
@@ -45,7 +46,7 @@
   }
 
   a:not([class*="rounded"]) {
-    @apply text-accent underline-offset-4 transition-colors hover:text-sky-300;
+    @apply text-accent underline-offset-4 transition-colors hover:text-[#b8ff6a];
   }
 
   input,

@@ -38,16 +38,16 @@ const statusIcon: Record<IssueStatus, LucideIcon> = {
 };
 
 const statusUi: Record<IssueStatus, string> = {
-  open: "border-sky-400/40 bg-sky-400/10 text-sky-300",
-  in_progress: "border-violet-400/40 bg-violet-500/10 text-violet-200",
-  resolved: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
-  closed: "border-slate-500/50 bg-slate-500/10 text-slate-300",
+  open: "border-accent/40 bg-accent/10 text-accent",
+  in_progress: "border-foreground/25 bg-foreground/10 text-foreground",
+  resolved: "border-accent/50 bg-accent/15 text-[#b8ff6a]",
+  closed: "border-muted/50 bg-foreground/5 text-muted",
 };
 
 const priorityUi: Record<IssuePriority, string> = {
-  low: "border-slate-500/50 bg-slate-500/5 text-slate-300",
-  medium: "border-amber-400/40 bg-amber-500/10 text-amber-200",
-  high: "border-orange-400/40 bg-orange-500/10 text-orange-200",
+  low: "border-muted/50 bg-foreground/5 text-muted",
+  medium: "border-accent/35 bg-accent/10 text-accent",
+  high: "border-foreground/35 bg-foreground/10 text-foreground",
   urgent: "border-red-400/40 bg-red-500/10 text-red-200",
 };
 
