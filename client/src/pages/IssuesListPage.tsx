@@ -126,7 +126,7 @@ export function IssuesListPage() {
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
     <Page
       title="Issues"
       subtitle={
@@ -215,83 +215,100 @@ export function IssuesListPage() {
         </>
       }
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
-        {error ? (
-          <div
-            className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
-            role="alert"
-          >
-            <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
-            {error}
-          </div>
-        ) : null}
-
-        {loading ? (
-          <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
-            <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
-            Loading issues…
-          </div>
-        ) : null}
-
-        {!loading && list && list.items.length === 0 && view === "list" ? (
-          <p className="shrink-0 text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
-        ) : null}
-
-        {!loading && list && view === "board" ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-            <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden">
-              <IssueBoard
-                issues={list.items}
-                onStatusChange={async (issueId, status) => {
-                  await updateIssue(issueId, { status });
-                }}
-              />
+      {view === "list" ? (
+        <div className="flex flex-col gap-4">
+          {error ? (
+            <div
+              className="flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
+              role="alert"
+            >
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
+              {error}
             </div>
-            {list.total > 200 ? (
-              <p className="shrink-0 text-xs text-muted">
-                Showing the first 200 issues for the board. Refine search or switch to list view for pagination.
-              </p>
-            ) : null}
-          </div>
-        ) : null}
+          ) : null}
 
-        {view === "list" && list && list.items.length > 0 ? (
-          <div className="flex min-h-0 flex-1 flex-col">
-            <IssueGroupedList issues={list.items} />
-          </div>
-        ) : null}
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+              Loading issues…
+            </div>
+          ) : null}
 
-        {view === "list" && list && !filters.status && list.total > 200 ? (
-          <p className="shrink-0 text-xs text-muted">
-            Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
-          </p>
-        ) : null}
+          {!loading && list && list.items.length === 0 ? (
+            <p className="text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
+          ) : null}
 
-        {view === "list" && list && filters.status && list.totalPages > 1 ? (
-          <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 pt-4">
-            <Button
-              variant="secondary"
-              type="button"
-              disabled={filters.page <= 1}
-              onClick={() => setFilters({ page: filters.page - 1 })}
+          {list && list.items.length > 0 ? <IssueGroupedList issues={list.items} /> : null}
+
+          {!loading && list && !filters.status && list.total > 200 ? (
+            <p className="text-xs text-muted">
+              Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
+            </p>
+          ) : null}
+
+          {list && filters.status && list.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <Button
+                variant="secondary"
+                type="button"
+                disabled={filters.page <= 1}
+                onClick={() => setFilters({ page: filters.page - 1 })}
+              >
+                Previous
+              </Button>
+              <span className="px-2 text-sm text-muted">
+                Page {list.page} of {list.totalPages}
+                <span className="text-muted/70"> · {list.total} total</span>
+              </span>
+              <Button
+                variant="secondary"
+                type="button"
+                disabled={filters.page >= list.totalPages}
+                onClick={() => setFilters({ page: filters.page + 1 })}
+              >
+                Next
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {error ? (
+            <div
+              className="shrink-0 flex items-start gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-200"
+              role="alert"
             >
-              Previous
-            </Button>
-            <span className="px-2 text-sm text-muted">
-              Page {list.page} of {list.totalPages}
-              <span className="text-muted/70"> · {list.total} total</span>
-            </span>
-            <Button
-              variant="secondary"
-              type="button"
-              disabled={filters.page >= list.totalPages}
-              onClick={() => setFilters({ page: filters.page + 1 })}
-            >
-              Next
-            </Button>
-          </div>
-        ) : null}
-      </div>
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-300" aria-hidden />
+              {error}
+            </div>
+          ) : null}
+
+          {loading ? (
+            <div className="shrink-0 flex items-center gap-2 text-sm text-muted">
+              <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+              Loading issues…
+            </div>
+          ) : null}
+
+          {list && view === "board" ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+              <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden">
+                <IssueBoard
+                  issues={list.items}
+                  onStatusChange={async (issueId, status) => {
+                    await updateIssue(issueId, { status });
+                  }}
+                />
+              </div>
+              {list.total > 200 ? (
+                <p className="shrink-0 text-xs text-muted">
+                  Showing the first 200 issues for the board. Refine search or switch to list view for pagination.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      )}
     </Page>
     <NewIssueModal open={isNewIssueModal} onClose={closeNewIssueModal} />
     <IssueFiltersModal
