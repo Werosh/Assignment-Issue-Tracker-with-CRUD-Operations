@@ -6,6 +6,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
+import { PasswordInput } from "../components/ui/PasswordInput";
 import { useAuthStore } from "../store/authStore";
 
 export function LoginPage() {
@@ -61,12 +62,12 @@ export function LoginPage() {
             />
           </Field>
           <Field label="Password" icon={HiOutlineLockClosed}>
-            <Input
+            <PasswordInput
               name="password"
-              type="password"
               required
               autoComplete="current-password"
               minLength={8}
+              onFocus={clearError}
             />
           </Field>
           <div className="pt-2">

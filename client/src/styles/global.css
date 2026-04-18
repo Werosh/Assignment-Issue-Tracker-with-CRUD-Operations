@@ -73,6 +73,21 @@
     @apply text-foreground;
   }
 
+  /*
+   * WebKit autofill uses its own background/text colors unless overridden.
+   * Match .input-app (surface-900 + foreground) so suggestions keep the same look.
+   */
+  .input-app:-webkit-autofill,
+  .input-app:-webkit-autofill:hover,
+  .input-app:-webkit-autofill:focus,
+  .input-app:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface-900) inset !important;
+    box-shadow: 0 0 0 1000px var(--color-surface-900) inset !important;
+    -webkit-text-fill-color: var(--color-foreground) !important;
+    caret-color: var(--color-foreground);
+    transition: background-color 99999s ease-out 0s;
+  }
+
   .sr-only {
     @apply absolute h-px w-px overflow-hidden p-0 whitespace-nowrap border-0;
     clip: rect(0, 0, 0, 0);
