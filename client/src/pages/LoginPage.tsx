@@ -21,7 +21,7 @@ export function LoginPage() {
     <Page
       title="Sign in"
       subtitle="Welcome back. Use your email and password to continue."
-      className="max-w-lg"
+      className="mx-auto w-full max-w-lg"
     >
       <Card className="p-6 sm:p-8">
         {error ? (

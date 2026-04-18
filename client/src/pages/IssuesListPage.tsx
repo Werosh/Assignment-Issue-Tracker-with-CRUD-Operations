@@ -41,7 +41,7 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <Card className="group flex min-w-[140px] flex-1 flex-col gap-1 p-4 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lg">
+    <Card className="group flex min-w-0 flex-col gap-1 p-4 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.75rem] font-medium uppercase tracking-wider text-muted">{label}</span>
         <Icon className={cn("size-4 opacity-70 transition-opacity group-hover:opacity-100", accentClass)} aria-hidden />
@@ -173,7 +173,7 @@ export function IssuesListPage() {
         </>
       }
     >
-      <section className="mb-6 flex flex-wrap gap-3">
+      <section className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Open" value={stats?.open ?? 0} accentClass="text-accent" icon={CircleDot} />
         <StatCard label="In progress" value={stats?.in_progress ?? 0} accentClass="text-foreground" icon={Activity} />
         <StatCard label="Resolved" value={stats?.resolved ?? 0} accentClass="text-[#b8ff6a]" icon={CheckCircle2} />
@@ -262,7 +262,7 @@ export function IssuesListPage() {
       ) : null}
 
       {!loading && list && view === "board" ? (
-        <div className="mt-4">
+        <div className="mt-4 flex min-h-[min(52vh,480px)] flex-1 flex-col lg:min-h-[min(58vh,620px)]">
           <IssueBoard
             issues={list.items}
             onStatusChange={async (issueId, status) => {

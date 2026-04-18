@@ -23,7 +23,7 @@ export function RegisterPage() {
     <Page
       title="Create account"
       subtitle="Use at least 8 characters for your password. Add a display name if you like."
-      className="max-w-lg"
+      className="mx-auto w-full max-w-lg"
     >
       <Card className="p-6 sm:p-8">
         {error ? (

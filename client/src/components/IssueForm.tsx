@@ -33,7 +33,7 @@ export function IssueForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <Card className="max-w-2xl p-5 sm:p-7">
+    <Card className="w-full max-w-4xl p-5 sm:p-7">
       <form key={initial?.id ?? "new"} onSubmit={handle} className="space-y-4">
         <Field label="Title">
           <Input name="title" required maxLength={200} defaultValue={initial?.title} autoComplete="off" />

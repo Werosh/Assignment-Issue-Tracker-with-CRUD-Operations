@@ -54,12 +54,12 @@ function BoardColumn({
   });
 
   return (
-    <div className="flex w-[min(100%,280px)] shrink-0 flex-col">
+    <div className="flex w-[min(100%,280px)] shrink-0 flex-col lg:min-w-0 lg:w-0 lg:max-w-none lg:flex-1">
       <div className="mb-2 flex items-center justify-between gap-2 px-1">
         <h3 className="text-[0.8rem] font-semibold uppercase tracking-wide text-muted">{title}</h3>
         <span className="rounded-md bg-surface-800 px-2 py-0.5 font-mono text-xs text-muted">{issues.length}</span>
       </div>
-      <div ref={setNodeRef} className="h-full min-h-[min(60vh,520px)]">
+      <div ref={setNodeRef} className="flex min-h-[min(56vh,480px)] flex-1 flex-col lg:min-h-[min(62vh,640px)]">
         <Card
           className={cn(
             "flex h-full min-h-[inherit] flex-col gap-2 p-2",
@@ -221,27 +221,29 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={onDragStart}
-      onDragCancel={onDragCancel}
-      onDragEnd={(e) => void onDragEnd(e)}
-    >
-      <div className="flex gap-4 overflow-x-auto pb-4 pt-1 [scrollbar-gutter:stable]">
-        {COLUMNS.map((col) => (
-          <BoardColumn
-            key={col.id}
-            status={col.id}
-            title={col.title}
-            issues={byStatus[col.id]}
-            suppressLinkNavUntilRef={suppressLinkNavUntilRef}
-          />
-        ))}
-      </div>
-      <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>
-        {activeIssue ? <DraggingCardPreview issue={activeIssue} /> : null}
-      </DragOverlay>
-    </DndContext>
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={onDragStart}
+        onDragCancel={onDragCancel}
+        onDragEnd={(e) => void onDragEnd(e)}
+      >
+        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-4 pt-1 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] sm:gap-4 lg:h-full lg:overflow-x-visible lg:pb-2">
+          {COLUMNS.map((col) => (
+            <BoardColumn
+              key={col.id}
+              status={col.id}
+              title={col.title}
+              issues={byStatus[col.id]}
+              suppressLinkNavUntilRef={suppressLinkNavUntilRef}
+            />
+          ))}
+        </div>
+        <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>
+          {activeIssue ? <DraggingCardPreview issue={activeIssue} /> : null}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
 }

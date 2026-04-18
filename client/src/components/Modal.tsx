@@ -28,7 +28,7 @@ export function Modal({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/55 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:p-6"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -37,7 +37,7 @@ export function Modal({
         role="dialog"
         aria-modal
         aria-labelledby="modal-title"
-        className="relative w-full max-w-md rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)]"
+        className="relative my-auto w-full max-w-md max-h-[min(90dvh,100%)] overflow-y-auto rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)] sm:p-6"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <button
