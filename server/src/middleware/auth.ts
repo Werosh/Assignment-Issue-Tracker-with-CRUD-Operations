@@ -10,7 +10,7 @@ declare global {
 }
 
 export function createAuthMiddleware(jwtSecret: string) {
-  return function authMiddleware(req: Request, res: Response, next: NextFunction): void {
+  return async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
     const header = req.headers.authorization;
     if (!header?.startsWith("Bearer ")) {
       res.status(401).json({ error: "Authentication required" });
@@ -18,7 +18,7 @@ export function createAuthMiddleware(jwtSecret: string) {
     }
     const token = header.slice(7);
     try {
-      const payload = verifyToken(token, jwtSecret);
+      const payload = await verifyToken(token, jwtSecret);
       req.userId = payload.sub;
       next();
     } catch {

@@ -29,7 +29,7 @@ export function createAuthController(jwtSecret: string) {
       passwordHash,
       name: body.name,
     });
-    const token = signToken(user._id, jwtSecret);
+    const token = await signToken(user._id, jwtSecret);
     res.status(201).json({
       token,
       user: { id: user._id, email: user.email, name: user.name },
@@ -46,7 +46,7 @@ export function createAuthController(jwtSecret: string) {
     if (!ok) {
       throw new HttpError(401, "Invalid email or password");
     }
-    const token = signToken(user._id, jwtSecret);
+    const token = await signToken(user._id, jwtSecret);
     res.json({
       token,
       user: { id: user._id, email: user.email, name: user.name },
