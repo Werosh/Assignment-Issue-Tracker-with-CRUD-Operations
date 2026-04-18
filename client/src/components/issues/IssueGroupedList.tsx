@@ -11,8 +11,8 @@ import { Link, useNavigate } from "react-router-dom";
 import type {
   Issue,
   IssuePriority,
-  IssueStatus,
   IssueSeverity,
+  IssueStatus,
 } from "../../types/issue";
 import { cn } from "../../lib/cn";
 
@@ -37,14 +37,27 @@ const PRIORITY_LABEL: Record<IssuePriority, string> = {
   urgent: "Urgent",
 };
 
-const SEVERITY_LABEL: Record<IssueSeverity, string> = {
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  critical: "Critical",
+/** Lower value = sort earlier (more urgent). */
+const PRIORITY_ORDER: Record<IssuePriority, number> = {
+  urgent: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
 };
 
-function sortByUpdated(a: Issue, b: Issue) {
+/** Lower value = sort earlier (more severe). */
+const SEVERITY_ORDER: Record<IssueSeverity, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+function sortGroupIssues(a: Issue, b: Issue) {
+  const p = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+  if (p !== 0) return p;
+  const s = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity];
+  if (s !== 0) return s;
   const ta = a.updatedAt ? Date.parse(a.updatedAt) : 0;
   const tb = b.updatedAt ? Date.parse(b.updatedAt) : 0;
   return tb - ta;
@@ -118,7 +131,7 @@ export function IssueGroupedList({ issues }: Props) {
       if (map[i.status]) map[i.status].push(i);
     }
     for (const s of STATUS_ORDER) {
-      map[s].sort(sortByUpdated);
+      map[s].sort(sortGroupIssues);
     }
     return map;
   }, [issues]);
@@ -221,11 +234,6 @@ export function IssueGroupedList({ issues }: Props) {
                               <span className="min-w-0 flex-1">
                                 <span className="block font-medium leading-snug text-foreground group-hover:text-accent">
                                   {issue.title}
-                                </span>
-                                <span className="mt-1 inline-flex flex-wrap gap-1.5">
-                                  <span className="rounded-md border border-border/70 bg-surface-800/80 px-1.5 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-muted">
-                                    {SEVERITY_LABEL[issue.severity]}
-                                  </span>
                                 </span>
                               </span>
                             </Link>
