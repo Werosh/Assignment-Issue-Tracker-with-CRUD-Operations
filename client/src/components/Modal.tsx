@@ -37,7 +37,7 @@ export function Modal({
         role="dialog"
         aria-modal
         aria-labelledby="modal-title"
-        className="relative my-auto w-full max-w-md max-h-[min(90dvh,100%)] overflow-y-auto rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)] sm:p-6"
+        className="relative my-auto w-full max-w-md max-h-[min(90vh,100%)] overflow-y-auto rounded-2xl border border-border/90 bg-surface-900 p-5 shadow-[var(--shadow-elevated)] sm:p-6"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <button

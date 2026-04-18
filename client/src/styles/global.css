@@ -31,18 +31,18 @@
 
 @layer base {
   html {
-    @apply h-full scroll-smooth;
+    @apply min-h-[100vh] scroll-smooth;
   }
 
   body {
-    @apply min-h-dvh bg-surface-950 font-sans text-foreground antialiased;
+    @apply min-h-[100vh] bg-surface-950 font-sans text-foreground antialiased;
     background-image:
       radial-gradient(1200px 800px at 10% -10%, rgb(140 255 46 / 0.12) 0%, transparent 55%),
       radial-gradient(900px 600px at 100% 0%, rgb(140 255 46 / 0.08) 0%, transparent 50%);
   }
 
   #root {
-    @apply flex min-h-dvh w-full flex-col overflow-x-hidden;
+    @apply flex min-h-[100vh] w-full flex-col overflow-x-hidden;
   }
 
   a:not([class*="rounded"]) {
