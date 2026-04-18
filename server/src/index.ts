@@ -1,0 +1,18 @@
+import "dotenv/config";
+import { loadEnv } from "./config/env";
+import { connectDb } from "./config/db";
+import { createApp } from "./app";
+
+async function main() {
+  const env = loadEnv();
+  await connectDb(env.MONGODB_URI);
+  const app = createApp(env);
+  app.listen(env.PORT, () => {
+    console.log(`API listening on http://localhost:${env.PORT}`);
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

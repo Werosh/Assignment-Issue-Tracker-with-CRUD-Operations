@@ -1,0 +1,82 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c0e12;
+  --bg-elevated: #141820;
+  --bg-muted: #1a202c;
+  --border: #2d3748;
+  --text: #e8ecf4;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-dim: #0ea5e966;
+  --danger: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  --status-open: #38bdf8;
+  --status-progress: #a78bfa;
+  --status-resolved: #4ade80;
+  --status-closed: #64748b;
+
+  --priority-low: #94a3b8;
+  --priority-medium: #fbbf24;
+  --priority-high: #fb923c;
+  --priority-urgent: #f87171;
+
+  --radius: 10px;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: radial-gradient(1200px 800px at 10% -10%, #1a2340 0%, transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, #0f3a45 0%, transparent 50%),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
