@@ -67,6 +67,46 @@ npm run start
 
 `npm run build` compiles the server TypeScript and builds the client bundle into `client/dist`. `npm run start` runs the compiled API only you still need to serve `client/dist` as static files (nginx, S3+CloudFront, etc.) and reverse-proxy `/api` to Node. Set the same env vars on the host and keep HTTPS at the edge.
 
+## Deployment (Netlify + Render)
+
+The client uses relative `/api/...` URLs. In production you can host the **React app on Netlify** and the **Express API on Render**, with Netlify proxying `/api/*` to Render (same pattern as the Vite dev proxy).
+
+**Live app (Netlify):** [https://issuetrackerbywk.netlify.app/](https://issuetrackerbywk.netlify.app/)
+
+### 1. Deploy the API on Render
+
+1. In [Render](https://render.com), create a **Web Service** from this repository.
+2. Use the **repo root** (default) so npm workspaces resolve correctly.
+3. **Build command:** `npm install && npm run build -w server`
+4. **Start command:** `npm run start -w server`
+5. Under **Environment**, set:
+   - `MONGODB_URI` — your Atlas `mongodb+srv` URI (same as local).
+   - `JWT_SECRET` — a long random string (the server requires at least 16 characters).
+   - `CLIENT_ORIGIN` — the exact browser origin of your Netlify site. For this deployment use `https://issuetrackerbywk.netlify.app` (no path, no trailing slash). If you add a custom domain later, set this to that origin instead (e.g. `https://issues.example.com`).
+6. Render injects `PORT`; you do not need to set it unless you have a special case.
+7. Deploy and note the public URL (for example `https://assignment-issue-tracker-with-crud.onrender.com`).
+
+### 2. Point Netlify at the API
+
+The root [`netlify.toml`](netlify.toml) defines the static build and a rewrite so `/api/*` on the Netlify origin is forwarded to your Render service.
+
+1. Edit the `[[redirects]]` block for `/api/*` and set `to` to your Render base URL plus `/api/:splat`, for example:
+
+   `https://YOUR-SERVICE.onrender.com/api/:splat`
+
+2. Commit that change (or override in the Netlify UI under **Redirects** if you prefer not to commit URLs).
+
+### 3. Deploy the frontend on Netlify
+
+1. In [Netlify](https://www.netlify.com), add a site from the same repo (or import the repo if you have not already).
+2. Build settings are taken from `netlify.toml`:
+   - **Build command:** `npm install && npm run build -w client`
+   - **Publish directory:** `client/dist`
+3. No `VITE_*` API base URL is required; the app keeps calling `/api` on the Netlify origin and Netlify proxies to Render.
+4. Set **`CLIENT_ORIGIN` on Render** to `https://issuetrackerbywk.netlify.app` and redeploy the Render service so CORS allows the browser.
+
+**Order that avoids broken CORS:** deploy Render → set `CLIENT_ORIGIN` to `https://issuetrackerbywk.netlify.app` → update `netlify.toml` with the Render URL → deploy Netlify. If you change either public URL later, update `CLIENT_ORIGIN` and/or the Netlify redirect target accordingly.
+
 ## Scripts recap
 
 `npm run dev` - both processes for day-to-day coding.
