@@ -155,8 +155,8 @@ export function IssuesListPage() {
       title="Issues"
       subtitle={
         view === "board"
-          ? "Board view: drag cards by the handle to move between columns. Up to 200 issues load; search and filters still apply."
-          : "List view groups issues by status in scrollable sections. With no status filter, up to 200 recently updated issues load. Search debounces so the API is not called on every keystroke."
+          ? "Grab a card by the handle and drop it into another column. Search and filters behave the same as in list view—up to 200 issues shown."
+          : "Browse by status in one scrolling list. Without a status filter, you'll see your 200 most recent updates. Search runs a moment after you stop typing."
       }
       stickyFooter={
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
