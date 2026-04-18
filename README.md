@@ -60,6 +60,8 @@ Point the client at the API by serving the SPA and forwarding `/api` to the Expr
 - `server/` — Express app: models, routes, JWT auth, validation (Zod), issue export (CSV/JSON)
 - `client/` — React + Vite: Zustand stores, routed pages, debounced search, paginated list, reusable UI pieces
 
+This repo uses npm workspaces. `vite` and `@vitejs/plugin-react` are listed in the root `package.json` so the tooling resolves correctly when dependencies are hoisted to the top-level `node_modules` folder (common on Windows with workspaces).
+
 ## API overview
 
 - `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer token)

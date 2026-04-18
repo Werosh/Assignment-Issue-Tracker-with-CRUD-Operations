@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { createIssueController } from "../controllers/issueController";
+import { createIssueController } from "../controllers/issueController";
 import { createAuthMiddleware } from "../middleware/auth";
 import { asyncHandler } from "../utils/asyncHandler";
 
