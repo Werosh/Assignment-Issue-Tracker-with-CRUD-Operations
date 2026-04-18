@@ -1,98 +1,90 @@
 # Issue Tracker
 
-**Assignment: Associate Software Engineer (Frontend)**
+Associate frontend engineer assignment. React + TypeScript client (Vite, Zustand, React Router, Tailwind, Framer Motion, dnd-kit), Express + MongoDB API. JWT auth with bcrypt, per-user issues, full CRUD, list grouped by status with infinite scroll, board with drag-and-drop between columns, debounced search and filters, live status counts, CSV/JSON export, and a confirm step when you mark something resolved or closed.
 
-Full stack issue tracker: React and TypeScript on the client (Vite, Zustand, React Router, Tailwind), Express and MongoDB on the server. Features include JWT authentication, per user issue data, list and board views, debounced search, filters, and CSV or JSON export. The database target is **MongoDB Atlas** using a standard connection string.
+MongoDB is wired for a normal Atlas-style `mongodb+srv` connection string.
 
-## Prerequisites
+## What you need
 
-- Node.js 20 or later
-- A MongoDB Atlas cluster (free tier is sufficient) with a database user and network access rules configured
+Node 20+ and a MongoDB instance (Atlas free tier is fine). Create a database user and allow your IP in Network Access before you connect.
 
 ## Install
 
-From the repository root (npm workspaces install both `client` and `server`):
+From the repo root, workspaces pull in both apps:
 
 ```bash
 npm install
 ```
 
-Main dependencies: see `client/package.json` and `server/package.json` for exact versions. In summary, the client uses React, Vite, TypeScript, Zustand, Tailwind, Framer Motion, and dnd-kit. The server uses Express, Mongoose, Zod, jose (JWT), bcryptjs, Helmet, and CORS.
+Exact versions live in `client/package.json` and `server/package.json`. Client highlights: React, Vite, TypeScript, Zustand, Tailwind, Framer Motion, dnd-kit. Server: Express, Mongoose, Zod, jose for JWT, bcryptjs, Helmet, CORS.
 
 ## MongoDB Atlas
 
-Create a cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Under **Database Access**, create a user with a strong password. Under **Network Access**, restrict to your IP for development; avoid open `0.0.0.0/0` rules in production unless you understand the tradeoff. Use **Connect** then **Drivers** to copy the `mongodb+srv://` URI. Substitute username, password, and database name. Percent encode special characters in the password if required.
+Spin up a cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Add a user under Database Access, then under Network Access point it at your dev machine (tightening `0.0.0.0/0` is your call for local hacks only). Connect → Drivers → copy the `mongodb+srv://` URI, plug in user, password, and database name. If the password has special characters, URL-encode them.
 
-## Environment variables
+## Environment
 
-Copy `server/.env.example` to `server/.env` and set:
+Copy `server/.env.example` to `server/.env` and fill in the values.
 
-| Variable        | Purpose                                                                                        |
-| --------------- | ---------------------------------------------------------------------------------------------- |
-| `MONGODB_URI`   | Atlas connection string (TLS is used by `mongodb+srv`)                                         |
-| `JWT_SECRET`    | Secret key for signing tokens; must be long and random in any shared or production environment |
-| `CLIENT_ORIGIN` | Allowed browser origin for CORS (default `http://localhost:5173`)                              |
-| `PORT`          | API listen port (default `5000`)                                                               |
+`MONGODB_URI` is your connection string; `mongodb+srv` already implies TLS.
 
-Never commit `server/.env` or share real secrets in the repository. Keep `.env` out of version control and rotate credentials if they are exposed.
+`JWT_SECRET` should be a long random string anywhere the app is shared or deployed. Anyone with it can forge tokens.
 
-## Security
+`CLIENT_ORIGIN` is the browser origin allowed for CORS. For local dev the example file uses `http://localhost:5173`; change it to your real frontend URL when you deploy.
 
-This project applies common practices suitable for a coursework submission. Reviewers should note the following:
+`PORT` is where Express listens (defaults to 5000 if you omit it).
 
-**Server**
+Do not commit real `.env` files or paste secrets into the repo. Rotate anything that leaks.
 
-- Passwords are never stored in plain text. Registration hashes passwords with **bcrypt** before persistence.
-- **JWT** access tokens authenticate API requests. The signing key is `JWT_SECRET` only on the server.
-- **Helmet** sets sensible HTTP security headers.
-- **CORS** allows only `CLIENT_ORIGIN`. Set this to your deployed frontend URL in production.
-- Request bodies are size limited (`express.json` limit).
-- Issue routes enforce ownership: each user can only read, update, or delete their own issues.
+## Security (quick tour)
 
-**Configuration**
+Passwords are hashed with bcrypt on register; the API never stores plain text. Requests that touch issues send a Bearer JWT; the server verifies it with `JWT_SECRET` only on the server. Helmet adds sensible headers, CORS is locked to `CLIENT_ORIGIN`, and JSON bodies are capped. Each issue belongs to `createdBy`, so users only see their own rows.
 
-- Treat `JWT_SECRET` and `MONGODB_URI` like production secrets: high entropy for the JWT secret, and database credentials with least privilege (Atlas user scoped to this application).
-- In production, serve the API and SPA over **HTTPS**, set `CLIENT_ORIGIN` to the real frontend origin, and tighten Atlas **Network Access** to known IPs or cloud provider ranges where possible.
+The SPA keeps the token in `localStorage` to keep the stack simple. Use HTTPS in production; locking down token theft for real products usually means shorter-lived tokens, refresh, or httpOnly cookies—out of scope here but worth knowing.
 
-**Client**
-
-- The session token is stored in **localStorage** for simplicity. In production, always serve the app over HTTPS to reduce exposure on untrusted networks. Mitigating token theft fully would require additional measures (short lived tokens, refresh flow, httpOnly cookies) beyond this assignment scope.
-
-## Run (development)
+## Run locally
 
 ```bash
 npm run dev
 ```
 
-- Web app: `http://localhost:5173`
-- API: `http://localhost:5000` (Vite proxies `/api` to the API during development)
+That runs Express (API on port 5000 by default) and Vite together. Open the app at `http://localhost:5173`. Vite proxies `/api` to the backend so the browser stays same-origin for API calls during dev.
 
-## Using the application
+## Using the app
 
-Register or sign in. Issues are isolated per account. Create issues from the main screen; open details in a modal or use the edit page. Switch between list view (grouped by status, infinite scroll) and board view (drag and drop). Changing status to Resolved or Closed prompts for confirmation. Filters for status, priority, and severity are available from the filter control. Export CSV or JSON respects current search and filters. Sign out from the header.
+Register, then log in. Everything under Issues is per account.
 
-## Production build
+Create issues from the main screen (title, description, status, priority, severity). Open one from the list or board to see the detail modal; use Edit for the full-page form. List view groups cards by status and loads more as you scroll. Board view loads all matching issues for the current filters and lets you drag cards between columns—dropping onto Resolved or Closed opens a confirm dialog, same as changing those statuses in the modal or on the edit page.
+
+Search debounces so typing does not spam the API. Filters (status, priority, severity) live behind the filter button. Status counts at the bottom of the header update from `/api/issues/stats`. Export CSV or JSON uses whatever search and filters are active. Sign out is in the header.
+
+## Production
 
 ```bash
 npm run build
 npm run start
 ```
 
-`npm run start` runs the compiled API. Host the contents of `client/dist` as static files and reverse proxy `/api` to the Express process. Set environment variables on the host. Use HTTPS at the edge.
+`npm run build` compiles the server TypeScript and builds the client bundle into `client/dist`. `npm run start` runs the compiled API only—you still need to serve `client/dist` as static files (nginx, S3+CloudFront, etc.) and reverse-proxy `/api` to Node. Set the same env vars on the host and keep HTTPS at the edge.
 
-## Scripts
+## Scripts recap
 
-Use `npm run dev` when you are coding; it starts the Express API and the Vite dev server at the same time. When you want a production build, run `npm run build` first (that compiles the server and bundles the client). After that, `npm run start` only runs the API from the compiled output, which is what you use behind a reverse proxy once the frontend is built.
+`npm run dev` — both processes for day-to-day coding.
 
-## Project layout
+`npm run build` — production artifacts for client + server.
 
-- `client/` … React application, UI components, Zustand stores, API client
-- `server/` … Express application, Mongoose models, authentication middleware, issue and export routes
+`npm run start` — API from compiled `server` output after a build.
 
-## API reference
+## Repo layout
 
-- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer token)
-- `GET /api/issues` … query parameters: `page`, `limit`, `q`, `status`, `priority`, `severity`
-- `GET /api/issues/stats`
-- `GET /api/issues/export?format=json` or `format=csv`
-- `GET`, `PATCH`, `DELETE /api/issues/:id`, `POST /api/issues`
+`client/` holds the React app: pages, reusable UI, Zustand stores (`issueStore`, `authStore`), and the fetch helpers under `src/api/`.
+
+`server/` is Express: routes, Mongoose models (`User`, `Issue`), auth middleware, and the issue/export controllers.
+
+## HTTP API (Bearer auth except register/login)
+
+Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`.
+
+Issues: `GET /api/issues` with optional query params `page`, `limit`, `q` (title/description substring), `status`, `priority`, `severity`. `GET /api/issues/stats` returns counts per status. `GET /api/issues/export?format=json` or `format=csv` streams a download (respects the same filter params as list). `GET /api/issues/:id`, `PATCH /api/issues/:id`, `DELETE /api/issues/:id`, `POST /api/issues` for the usual CRUD.
+
+All issue routes expect `Authorization: Bearer <token>` from login or register.
