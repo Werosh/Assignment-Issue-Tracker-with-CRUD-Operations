@@ -14,6 +14,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { CSSProperties, MutableRefObject } from "react";
 import { useMemo, useRef, useState } from "react";
+import type { To } from "react-router-dom";
 import { Link } from "react-router-dom";
 import type { Issue, IssueStatus } from "../../types/issue";
 import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
@@ -43,11 +44,13 @@ function BoardColumn({
   title,
   issues,
   suppressLinkNavUntilRef,
+  issueTo,
 }: {
   status: IssueStatus;
   title: string;
   issues: Issue[];
   suppressLinkNavUntilRef: MutableRefObject<number>;
+  issueTo: (issueId: string) => To;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${status}`,
@@ -77,7 +80,12 @@ function BoardColumn({
             <p className="px-2 text-center text-xs text-muted/80">Drop issues here</p>
           ) : (
             issues.map((issue) => (
-              <DraggableIssueCard key={issue.id} issue={issue} suppressLinkNavUntilRef={suppressLinkNavUntilRef} />
+              <DraggableIssueCard
+                key={issue.id}
+                issue={issue}
+                issueTo={issueTo}
+                suppressLinkNavUntilRef={suppressLinkNavUntilRef}
+              />
             ))
           )}
         </div>
@@ -90,10 +98,12 @@ function IssueCardFace({
   issue,
   dragHandleProps,
   suppressLinkNavUntilRef,
+  issueTo,
 }: {
   issue: Issue;
   dragHandleProps?: Record<string, unknown>;
   suppressLinkNavUntilRef?: MutableRefObject<number>;
+  issueTo: (issueId: string) => To;
 }) {
   return (
     <div className="flex items-start gap-1.5 p-2.5">
@@ -106,7 +116,7 @@ function IssueCardFace({
         <GripVertical className="size-4" aria-hidden />
       </button>
       <Link
-        to={`/issues/${issue.id}`}
+        to={issueTo(issue.id)}
         className="min-w-0 flex-1 no-underline"
         onClickCapture={(e) => {
           if (suppressLinkNavUntilRef && Date.now() < suppressLinkNavUntilRef.current) {
@@ -127,9 +137,11 @@ function IssueCardFace({
 
 function DraggableIssueCard({
   issue,
+  issueTo,
   suppressLinkNavUntilRef,
 }: {
   issue: Issue;
+  issueTo: (issueId: string) => To;
   suppressLinkNavUntilRef: MutableRefObject<number>;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -156,6 +168,7 @@ function DraggableIssueCard({
     >
       <IssueCardFace
         issue={issue}
+        issueTo={issueTo}
         dragHandleProps={{ ...listeners, ...attributes }}
         suppressLinkNavUntilRef={suppressLinkNavUntilRef}
       />
@@ -163,23 +176,30 @@ function DraggableIssueCard({
   );
 }
 
-function DraggingCardPreview({ issue }: { issue: Issue }) {
+function DraggingCardPreview({
+  issue,
+  issueTo,
+}: {
+  issue: Issue;
+  issueTo: (issueId: string) => To;
+}) {
   return (
     <div
       className="pointer-events-none w-[min(260px,calc(100vw-2rem))] cursor-grabbing rounded-lg border border-border/90 bg-surface-900/95 shadow-xl ring-2 ring-accent/25"
       style={{ touchAction: "none" }}
     >
-      <IssueCardFace issue={issue} />
+      <IssueCardFace issue={issue} issueTo={issueTo} />
     </div>
   );
 }
 
 interface Props {
   issues: Issue[];
+  issueTo: (issueId: string) => To;
   onStatusChange: (issueId: string, status: IssueStatus) => Promise<void>;
 }
 
-export function IssueBoard({ issues, onStatusChange }: Props) {
+export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   /** After drag end/cancel, block stray pointer-up from activating the card link (ghost click). */
   const suppressLinkNavUntilRef = useRef(0);
@@ -246,12 +266,13 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
               status={col.id}
               title={col.title}
               issues={byStatus[col.id]}
+              issueTo={issueTo}
               suppressLinkNavUntilRef={suppressLinkNavUntilRef}
             />
           ))}
         </div>
         <DragOverlay dropAnimation={null} style={{ zIndex: 60 }}>
-          {activeIssue ? <DraggingCardPreview issue={activeIssue} /> : null}
+          {activeIssue ? <DraggingCardPreview issue={activeIssue} issueTo={issueTo} /> : null}
         </DragOverlay>
       </DndContext>
     </div>

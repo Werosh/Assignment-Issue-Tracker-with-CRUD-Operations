@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { IssueDetailPage } from "./pages/IssueDetailPage";
+import { IssueDetailRedirect } from "./components/IssueDetailRedirect";
 import { IssueEditPage } from "./pages/IssueEditPage";
 import { IssuesListPage } from "./pages/IssuesListPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -40,7 +40,7 @@ export function App() {
               path="/issues/:id"
               element={
                 <ProtectedRoute>
-                  <IssueDetailPage />
+                  <IssueDetailRedirect />
                 </ProtectedRoute>
               }
             />

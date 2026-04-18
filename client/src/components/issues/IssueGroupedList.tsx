@@ -7,6 +7,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { To } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import type { Issue, IssuePriority, IssueStatus } from "../../types/issue";
 import { cn } from "../../lib/cn";
@@ -78,9 +79,10 @@ function PriorityCell({ priority }: { priority: IssuePriority }) {
 
 interface Props {
   issues: Issue[];
+  issueTo: (issueId: string) => To;
 }
 
-export function IssueGroupedList({ issues }: Props) {
+export function IssueGroupedList({ issues, issueTo }: Props) {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState<Record<IssueStatus, boolean>>({
@@ -192,7 +194,7 @@ export function IssueGroupedList({ issues }: Props) {
                         >
                           <td className="align-middle px-3 py-2.5 pl-4 sm:px-4">
                             <Link
-                              to={`/issues/${issue.id}`}
+                              to={issueTo(issue.id)}
                               className="group flex min-w-0 items-start gap-2.5 no-underline"
                             >
                               <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-border/80 bg-surface-800 text-muted">

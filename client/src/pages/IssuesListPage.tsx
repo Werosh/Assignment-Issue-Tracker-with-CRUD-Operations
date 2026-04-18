@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
+import type { To } from "react-router-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IssueFiltersModal } from "../components/IssueFiltersModal";
 import { Page } from "../components/Page";
@@ -23,6 +24,7 @@ import { useIssueStore } from "../store/issueStore";
 import { cn } from "../lib/cn";
 import { IssueBoard } from "../components/issues/IssueBoard";
 import { IssueGroupedList } from "../components/issues/IssueGroupedList";
+import { IssueDetailModal } from "../components/IssueDetailModal";
 import { NewIssueModal } from "../components/NewIssueModal";
 
 function StatCard({
@@ -53,9 +55,31 @@ export function IssuesListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNewIssueModal = searchParams.get("new") === "1";
+  const issueParam = searchParams.get("issue");
+
   const closeNewIssueModal = useCallback(() => {
-    navigate("/", { replace: true });
-  }, [navigate]);
+    const next = new URLSearchParams(searchParams);
+    next.delete("new");
+    const qs = next.toString();
+    navigate({ pathname: "/", search: qs ? `?${qs}` : "" }, { replace: true });
+  }, [navigate, searchParams]);
+
+  const closeIssueModal = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("issue");
+    const qs = next.toString();
+    navigate({ pathname: "/", search: qs ? `?${qs}` : "" }, { replace: true });
+  }, [navigate, searchParams]);
+
+  const issueTo = useCallback(
+    (id: string): To => {
+      const next = new URLSearchParams(searchParams);
+      next.set("issue", id);
+      const qs = next.toString();
+      return { pathname: "/", search: qs ? `?${qs}` : "" };
+    },
+    [searchParams]
+  );
   const filters = useIssueStore((s) => s.filters);
   const setFilters = useIssueStore((s) => s.setFilters);
   const list = useIssueStore((s) => s.list);
@@ -238,7 +262,7 @@ export function IssuesListPage() {
             <p className="text-sm text-muted">No issues match your filters. Try adjusting search or create a new issue.</p>
           ) : null}
 
-          {list && list.items.length > 0 ? <IssueGroupedList issues={list.items} /> : null}
+          {list && list.items.length > 0 ? <IssueGroupedList issues={list.items} issueTo={issueTo} /> : null}
 
           {!loading && list && !filters.status && list.total > 200 ? (
             <p className="text-xs text-muted">
@@ -295,6 +319,7 @@ export function IssuesListPage() {
               <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden">
                 <IssueBoard
                   issues={list.items}
+                  issueTo={issueTo}
                   onStatusChange={async (issueId, status) => {
                     await updateIssue(issueId, { status });
                   }}
@@ -311,6 +336,7 @@ export function IssuesListPage() {
       )}
     </Page>
     <NewIssueModal open={isNewIssueModal} onClose={closeNewIssueModal} />
+    <IssueDetailModal issueId={issueParam} open={Boolean(issueParam)} onClose={closeIssueModal} />
     <IssueFiltersModal
       open={filtersModalOpen}
       onClose={() => setFiltersModalOpen(false)}

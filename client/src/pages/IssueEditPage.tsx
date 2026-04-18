@@ -61,7 +61,7 @@ export function IssueEditPage() {
       <IssueForm
         initial={issue}
         submitLabel="Save changes"
-        onCancel={() => navigate(`/issues/${issue.id}`)}
+        onCancel={() => navigate(`/?issue=${encodeURIComponent(issue.id)}`)}
         onSubmit={async (values) => {
           setError(null);
           try {
@@ -72,7 +72,7 @@ export function IssueEditPage() {
               priority: values.priority as IssuePriority,
               severity: values.severity as IssueSeverity,
             });
-            navigate(`/issues/${issue.id}`);
+            navigate(`/?issue=${encodeURIComponent(issue.id)}`);
           } catch (e) {
             setError(e instanceof Error ? e.message : "Update failed.");
           }
