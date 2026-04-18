@@ -27,6 +27,11 @@
 
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+
+  /* Scrollbars — match surfaces + subtle accent on interaction */
+  --scrollbar-track: #1c1c1c;
+  --scrollbar-thumb: #333333;
+  --scrollbar-thumb-hover: color-mix(in oklab, var(--color-accent) 28%, #3a3a3a);
 }
 
 @layer base {
@@ -58,5 +63,38 @@
   .sr-only {
     @apply absolute h-px w-px overflow-hidden p-0 whitespace-nowrap border-0;
     clip: rect(0, 0, 0, 0);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  /* Chromium / Safari / Edge */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+    border: 2px solid var(--scrollbar-track);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    border-color: var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
   }
 }
