@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   CircleDot,
   Columns3,
-  FileJson,
   LayoutList,
   Loader2,
   Plus,
@@ -15,9 +14,8 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Page } from "../components/Page";
-import { PriorityBadge, StatusBadge } from "../components/IssueBadges";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Field } from "../components/ui/Field";
@@ -28,6 +26,8 @@ import * as issuesApi from "../api/issues";
 import { useIssueStore } from "../store/issueStore";
 import { cn } from "../lib/cn";
 import { IssueBoard } from "../components/issues/IssueBoard";
+import { IssueGroupedList } from "../components/issues/IssueGroupedList";
+import { useAuthStore } from "../store/authStore";
 
 function StatCard({
   label,
@@ -53,6 +53,7 @@ function StatCard({
 
 export function IssuesListPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const filters = useIssueStore((s) => s.filters);
   const setFilters = useIssueStore((s) => s.setFilters);
   const list = useIssueStore((s) => s.list);
@@ -118,7 +119,7 @@ export function IssuesListPage() {
       subtitle={
         view === "board"
           ? "Board view: drag cards by the handle to move between columns. Up to 200 issues load; search and filters still apply."
-          : "Create, filter, and triage work in one place. Search pauses briefly while you type so the API is not called on every keystroke."
+          : "List view groups issues by status in scrollable sections. With no status filter, up to 200 recently updated issues load. Search debounces so the API is not called on every keystroke."
       }
       actions={
         <>
@@ -209,6 +210,10 @@ export function IssuesListPage() {
             </Select>
             {view === "board" ? (
               <p className="mt-1.5 text-xs text-muted">Status filter is off in board view; use columns instead.</p>
+            ) : !filters.status ? (
+              <p className="mt-1.5 text-xs text-muted">
+                All statuses shown in separate groups (up to 200 issues). Choose a status to filter the API and enable page navigation.
+              </p>
             ) : null}
           </Field>
           <Field label="Priority">
@@ -272,35 +277,19 @@ export function IssuesListPage() {
         </div>
       ) : null}
 
-      {view === "list" ? (
-        <ul className="mt-4 grid list-none gap-3 p-0">
-          {list?.items.map((issue) => (
-            <li key={issue.id}>
-              <Link
-                to={`/issues/${issue.id}`}
-                className="group block rounded-xl border border-border/90 bg-surface-850/50 p-4 no-underline shadow-sm transition-all hover:border-accent/40 hover:bg-surface-850 hover:shadow-md"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-white">
-                    {issue.title}
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    <StatusBadge status={issue.status} />
-                    <PriorityBadge priority={issue.priority} />
-                  </div>
-                </div>
-                <p className="mt-2 line-clamp-2 text-[0.92rem] leading-relaxed text-muted">{issue.description}</p>
-                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-accent/90 opacity-0 transition-opacity group-hover:opacity-100">
-                  <FileJson className="size-3.5" aria-hidden />
-                  View details
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {view === "list" && list && list.items.length > 0 ? (
+        <div className="mt-4 min-h-0 flex-1">
+          <IssueGroupedList issues={list.items} currentUser={user} />
+        </div>
       ) : null}
 
-      {view === "list" && list && list.totalPages > 1 ? (
+      {view === "list" && list && !filters.status && list.total > 200 ? (
+        <p className="mt-3 text-xs text-muted">
+          Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
+        </p>
+      ) : null}
+
+      {view === "list" && list && filters.status && list.totalPages > 1 ? (
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
           <Button
             variant="secondary"

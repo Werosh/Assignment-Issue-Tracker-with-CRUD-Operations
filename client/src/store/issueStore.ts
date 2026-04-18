@@ -78,15 +78,26 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
   loadIssues: async () => {
     set({ loading: true, error: null });
     const f = get().filters;
+    const view = get().issuesView;
     try {
-      const list = await issuesApi.listIssues({
-        page: f.page,
-        limit: f.limit,
-        q: f.q || undefined,
-        status: f.status || undefined,
-        priority: f.priority || undefined,
-        severity: f.severity || undefined,
-      });
+      const list = await issuesApi.listIssues(
+        view === "list" && !f.status
+          ? {
+              page: 1,
+              limit: 200,
+              q: f.q || undefined,
+              priority: f.priority || undefined,
+              severity: f.severity || undefined,
+            }
+          : {
+              page: f.page,
+              limit: f.limit,
+              q: f.q || undefined,
+              status: f.status || undefined,
+              priority: f.priority || undefined,
+              severity: f.severity || undefined,
+            }
+      );
       set({ list, loading: false });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load issues";
@@ -125,14 +136,22 @@ export const useIssueStore = create<IssueStoreState>((set, get) => ({
               priority: f.priority || undefined,
               severity: f.severity || undefined,
             })
-          : await issuesApi.listIssues({
-              page: f.page,
-              limit: f.limit,
-              q: f.q || undefined,
-              status: f.status || undefined,
-              priority: f.priority || undefined,
-              severity: f.severity || undefined,
-            });
+          : view === "list" && !f.status
+            ? await issuesApi.listIssues({
+                page: 1,
+                limit: 200,
+                q: f.q || undefined,
+                priority: f.priority || undefined,
+                severity: f.severity || undefined,
+              })
+            : await issuesApi.listIssues({
+                page: f.page,
+                limit: f.limit,
+                q: f.q || undefined,
+                status: f.status || undefined,
+                priority: f.priority || undefined,
+                severity: f.severity || undefined,
+              });
       set({ list });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to refresh issues";
