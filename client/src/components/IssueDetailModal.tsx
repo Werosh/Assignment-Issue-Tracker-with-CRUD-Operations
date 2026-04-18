@@ -7,7 +7,7 @@ import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { Field } from "./ui/Field";
 import { Select } from "./ui/Select";
-import type { IssueStatus } from "../types/issue";
+import type { IssuePriority, IssueSeverity, IssueStatus } from "../types/issue";
 import { useIssueStore } from "../store/issueStore";
 
 interface Props {
@@ -27,6 +27,8 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [statusSelect, setStatusSelect] = useState<IssueStatus>("open");
+  const [prioritySelect, setPrioritySelect] = useState<IssuePriority>("medium");
+  const [severitySelect, setSeveritySelect] = useState<IssueSeverity>("medium");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<IssueStatus | null>(null);
@@ -48,8 +50,10 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
   useEffect(() => {
     if (issue) {
       setStatusSelect(issue.status);
+      setPrioritySelect(issue.priority);
+      setSeveritySelect(issue.severity);
     }
-  }, [issue?.status, issue?.id]);
+  }, [issue?.id, issue?.status, issue?.priority, issue?.severity]);
 
   async function run(action: () => Promise<unknown>) {
     setPending(true);
@@ -73,6 +77,22 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
     setStatusSelect(next);
     void run(async () => {
       await updateIssue(issue!.id, { status: next });
+    });
+  }
+
+  function onPriorityChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const next = e.target.value as IssuePriority;
+    setPrioritySelect(next);
+    void run(async () => {
+      await updateIssue(issue!.id, { priority: next });
+    });
+  }
+
+  function onSeverityChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const next = e.target.value as IssueSeverity;
+    setSeveritySelect(next);
+    void run(async () => {
+      await updateIssue(issue!.id, { severity: next });
     });
   }
 
@@ -190,16 +210,36 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
             </div>
 
             <Card className="mb-5 p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status</h3>
-              <p className="mb-3 text-sm text-muted">Set the workflow state anytime. Resolving or closing asks for confirmation.</p>
-              <Field label="Current status">
-                <Select value={statusSelect} disabled={pending} onChange={onStatusChange} aria-label="Issue status">
-                  <option value="open">Open</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </Select>
-              </Field>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Status &amp; triage</h3>
+              <p className="mb-4 text-sm text-muted">
+                Set workflow state, priority, and severity anytime. Resolving or closing status asks for confirmation.
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="Status">
+                  <Select value={statusSelect} disabled={pending} onChange={onStatusChange} aria-label="Issue status">
+                    <option value="open">Open</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </Select>
+                </Field>
+                <Field label="Priority">
+                  <Select value={prioritySelect} disabled={pending} onChange={onPriorityChange} aria-label="Issue priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </Select>
+                </Field>
+                <Field label="Severity">
+                  <Select value={severitySelect} disabled={pending} onChange={onSeverityChange} aria-label="Issue severity">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </Select>
+                </Field>
+              </div>
             </Card>
 
             <Card className="p-5 sm:p-6">

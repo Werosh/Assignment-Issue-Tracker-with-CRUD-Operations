@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   CalendarDays,
   ChevronDown,
   ChevronRight,
@@ -9,7 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import type { To } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
-import type { Issue, IssuePriority, IssueStatus } from "../../types/issue";
+import type { Issue, IssuePriority, IssueSeverity, IssueStatus } from "../../types/issue";
 import { cn } from "../../lib/cn";
 import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 
@@ -34,6 +35,13 @@ const PRIORITY_LABEL: Record<IssuePriority, string> = {
   urgent: "Urgent",
 };
 
+const SEVERITY_LABEL: Record<IssueSeverity, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  critical: "Critical",
+};
+
 function formatShortDate(iso?: string) {
   if (!iso) return "—";
   try {
@@ -45,6 +53,36 @@ function formatShortDate(iso?: string) {
   } catch {
     return "—";
   }
+}
+
+function SeverityCell({ severity }: { severity: IssueSeverity }) {
+  const label = SEVERITY_LABEL[severity];
+  const isCritical = severity === "critical";
+  const isHigh = severity === "high";
+  return (
+    <div className="flex items-center gap-1.5">
+      <AlertTriangle
+        className={cn(
+          "size-3.5 shrink-0",
+          isCritical && "text-red-400",
+          isHigh && "text-amber-400",
+          severity === "medium" && "text-muted",
+          severity === "low" && "text-muted/60",
+        )}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          "text-[0.8rem] font-medium",
+          isCritical && "text-red-300",
+          isHigh && "text-amber-300/90",
+          (severity === "medium" || severity === "low") && "text-muted",
+        )}
+      >
+        {label}
+      </span>
+    </div>
+  );
 }
 
 function PriorityCell({ priority }: { priority: IssuePriority }) {
@@ -162,7 +200,7 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
 
             {expanded ? (
               <div id={id} className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
-                <table className="w-full min-w-[520px] border-collapse text-left text-[0.85rem] sm:text-[0.9rem]">
+                <table className="w-full min-w-[640px] border-collapse text-left text-[0.85rem] sm:text-[0.9rem]">
                   <thead>
                     <tr className="border-b border-border/80 bg-surface-950/80 text-[0.65rem] font-semibold uppercase tracking-wider text-muted sm:text-[0.7rem]">
                       <th className="bg-surface-950/95 px-2 py-2 pl-3 sm:px-3 sm:py-2.5 sm:pl-4">
@@ -170,6 +208,9 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
                       </th>
                       <th className="w-[130px] bg-surface-950/95 px-2 py-2 sm:py-2.5">
                         Updated
+                      </th>
+                      <th className="w-[120px] bg-surface-950/95 px-2 py-2 sm:py-2.5">
+                        Severity
                       </th>
                       <th className="w-[120px] bg-surface-950/95 px-2 py-2 pr-3 text-right sm:px-3 sm:py-2.5 sm:pr-5">
                         Priority
@@ -180,7 +221,7 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
                     {groupIssues.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={3}
+                          colSpan={4}
                           className="px-4 py-8 text-center text-sm text-muted"
                         >
                           No issues in this status.
@@ -218,6 +259,9 @@ export function IssueGroupedList({ issues, issueTo }: Props) {
                               />
                               {formatShortDate(issue.updatedAt)}
                             </span>
+                          </td>
+                          <td className="align-middle px-2 py-2.5 sm:px-3">
+                            <SeverityCell severity={issue.severity} />
                           </td>
                           <td className="align-middle px-3 py-2.5 pr-4 sm:pr-5">
                             <PriorityCell priority={issue.priority} />
