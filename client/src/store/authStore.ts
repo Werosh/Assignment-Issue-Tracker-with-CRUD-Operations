@@ -12,6 +12,7 @@ interface StoredAuth {
 
 function readStored(): StoredAuth | null {
   try {
+    if (typeof localStorage === "undefined") return null;
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as StoredAuth;
@@ -23,6 +24,7 @@ function readStored(): StoredAuth | null {
 }
 
 function writeStored(data: StoredAuth | null) {
+  if (typeof localStorage === "undefined") return;
   if (!data) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("auth_token");
@@ -32,12 +34,24 @@ function writeStored(data: StoredAuth | null) {
   localStorage.setItem("auth_token", data.token);
 }
 
+function initialSession(): { token: string | null; user: UserPublic | null } {
+  const s = readStored();
+  if (s) {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("auth_token", s.token);
+    }
+    return { token: s.token, user: s.user };
+  }
+  return { token: null, user: null };
+}
+
+const hydrated = initialSession();
+
 interface AuthState {
   token: string | null;
   user: UserPublic | null;
   loading: boolean;
   error: string | null;
-  init: () => void;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
@@ -46,18 +60,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  token: null,
-  user: null,
+  token: hydrated.token,
+  user: hydrated.user,
   loading: false,
   error: null,
-
-  init: () => {
-    const s = readStored();
-    if (s) {
-      localStorage.setItem("auth_token", s.token);
-      set({ token: s.token, user: s.user });
-    }
-  },
 
   bootstrap: async () => {
     const token = get().token ?? readStored()?.token ?? null;
@@ -73,9 +79,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const next = { token, user };
       writeStored(next);
       set({ ...next, loading: false });
-    } catch {
-      writeStored(null);
-      set({ user: null, token: null, loading: false });
+    } catch (e) {
+      const status = e instanceof ApiError ? e.status : 0;
+      if (status === 401 || status === 403) {
+        writeStored(null);
+        set({ user: null, token: null, loading: false });
+      } else {
+        set({ loading: false });
+      }
     }
   },
 

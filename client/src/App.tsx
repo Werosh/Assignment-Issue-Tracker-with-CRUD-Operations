@@ -11,13 +11,11 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { useAuthStore } from "./store/authStore";
 
 function AuthReady({ children }: { children: React.ReactNode }) {
-  const init = useAuthStore((s) => s.init);
   const bootstrap = useAuthStore((s) => s.bootstrap);
 
   useEffect(() => {
-    init();
     void bootstrap();
-  }, [init, bootstrap]);
+  }, [bootstrap]);
 
   return <>{children}</>;
 }
