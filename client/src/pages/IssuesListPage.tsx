@@ -27,7 +27,6 @@ import { useIssueStore } from "../store/issueStore";
 import { cn } from "../lib/cn";
 import { IssueBoard } from "../components/issues/IssueBoard";
 import { IssueGroupedList } from "../components/issues/IssueGroupedList";
-import { useAuthStore } from "../store/authStore";
 
 function StatCard({
   label,
@@ -53,7 +52,6 @@ function StatCard({
 
 export function IssuesListPage() {
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
   const filters = useIssueStore((s) => s.filters);
   const setFilters = useIssueStore((s) => s.setFilters);
   const list = useIssueStore((s) => s.list);
@@ -279,7 +277,7 @@ export function IssuesListPage() {
 
       {view === "list" && list && list.items.length > 0 ? (
         <div className="mt-4 min-h-0 flex-1">
-          <IssueGroupedList issues={list.items} currentUser={user} />
+          <IssueGroupedList issues={list.items} />
         </div>
       ) : null}
 

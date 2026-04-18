@@ -42,18 +42,6 @@ function formatShortDate(iso?: string) {
   }
 }
 
-function initialsFromUser(name: string | undefined, email: string | undefined) {
-  const n = name?.trim();
-  if (n) {
-    const parts = n.split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase().slice(0, 2);
-    return n.slice(0, 2).toUpperCase();
-  }
-  const local = email?.split("@")[0];
-  if (local && local.length >= 2) return local.slice(0, 2).toUpperCase();
-  return "?";
-}
-
 function PriorityCell({ priority }: { priority: IssuePriority }) {
   const label = PRIORITY_LABEL[priority];
   const isUrgent = priority === "urgent";
@@ -86,14 +74,10 @@ function PriorityCell({ priority }: { priority: IssuePriority }) {
 
 interface Props {
   issues: Issue[];
-  /** Logged-in user — issues are scoped to the owner; shown as assignee on each row. */
-  currentUser: { name?: string; email?: string } | null;
 }
 
-export function IssueGroupedList({ issues, currentUser }: Props) {
+export function IssueGroupedList({ issues }: Props) {
   const navigate = useNavigate();
-  const assigneeInitials = initialsFromUser(currentUser?.name, currentUser?.email);
-  const assigneeTitle = currentUser?.name?.trim() || currentUser?.email || "Account";
 
   const [open, setOpen] = useState<Record<IssueStatus, boolean>>({
     open: true,
@@ -164,11 +148,10 @@ export function IssueGroupedList({ issues, currentUser }: Props) {
                 id={id}
                 className="max-h-[min(420px,48vh)] overflow-x-auto overflow-y-auto [-webkit-overflow-scrolling:touch]"
               >
-                <table className="w-full min-w-[640px] border-collapse text-left text-[0.9rem]">
+                <table className="w-full min-w-[520px] border-collapse text-left text-[0.9rem]">
                   <thead>
                     <tr className="border-b border-border/80 bg-surface-950/80 text-[0.7rem] font-semibold uppercase tracking-wider text-muted">
                       <th className="sticky top-0 z-10 bg-surface-950/95 px-3 py-2.5 pl-4 backdrop-blur-sm sm:px-4">Name</th>
-                      <th className="sticky top-0 z-10 w-[120px] bg-surface-950/95 px-2 py-2.5 text-center backdrop-blur-sm">Assignee</th>
                       <th className="sticky top-0 z-10 w-[130px] bg-surface-950/95 px-2 py-2.5 backdrop-blur-sm">Updated</th>
                       <th className="sticky top-0 z-10 w-[120px] bg-surface-950/95 px-3 py-2.5 pr-4 text-right backdrop-blur-sm sm:pr-5">Priority</th>
                     </tr>
@@ -176,7 +159,7 @@ export function IssueGroupedList({ issues, currentUser }: Props) {
                   <tbody>
                     {groupIssues.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted">
+                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-muted">
                           No issues in this status.
                         </td>
                       </tr>
@@ -202,14 +185,6 @@ export function IssueGroupedList({ issues, currentUser }: Props) {
                                 </span>
                               </span>
                             </Link>
-                          </td>
-                          <td className="align-middle px-2 text-center">
-                            <span
-                              className="inline-flex size-8 items-center justify-center rounded-full border border-border/60 bg-surface-800 text-[0.7rem] font-semibold text-foreground"
-                              title={assigneeTitle}
-                            >
-                              {assigneeInitials}
-                            </span>
                           </td>
                           <td className="align-middle px-2 text-muted">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
