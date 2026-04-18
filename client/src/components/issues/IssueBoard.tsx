@@ -21,8 +21,14 @@ import type { Issue, IssueStatus } from "../../types/issue";
 import { cardHoverTransition, dragOverlayTransition, dragOverlayVariants } from "../../lib/motionPresets";
 import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 import { PriorityBadge } from "../IssueBadges";
+import { Modal } from "../Modal";
 import { Card } from "../ui/Card";
 import { cn } from "../../lib/cn";
+import {
+  resolveCloseConfirmLabel,
+  resolveCloseModalBody,
+  resolveCloseModalTitle,
+} from "../../lib/issueStatusConfirm";
 
 const COLUMNS: { id: IssueStatus; title: string }[] = [
   { id: "open", title: "Open" },
@@ -212,6 +218,10 @@ interface Props {
 }
 
 export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    issueId: string;
+    next: IssueStatus;
+  } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   /** After drag end/cancel, block stray pointer-up from activating the card link (ghost click). */
   const suppressLinkNavUntilRef = useRef(0);
@@ -259,11 +269,40 @@ export function IssueBoard({ issues, issueTo, onStatusChange }: Props) {
     if (!issue) return;
     const next = statusFromOver(over);
     if (!next || next === issue.status) return;
+    if ((next === "resolved" || next === "closed") && next !== issue.status) {
+      setPendingStatusChange({ issueId, next });
+      return;
+    }
     await onStatusChange(issueId, next);
   }
 
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <Modal
+        open={pendingStatusChange != null}
+        title={
+          pendingStatusChange ? resolveCloseModalTitle(pendingStatusChange.next) : ""
+        }
+        overlayClassName="z-[60]"
+        danger={pendingStatusChange?.next === "closed"}
+        confirmLabel={
+          pendingStatusChange ? resolveCloseConfirmLabel(pendingStatusChange.next) : "Confirm"
+        }
+        onClose={() => setPendingStatusChange(null)}
+        onConfirm={() => {
+          const p = pendingStatusChange;
+          if (!p) return;
+          void (async () => {
+            try {
+              await onStatusChange(p.issueId, p.next);
+            } finally {
+              setPendingStatusChange(null);
+            }
+          })();
+        }}
+      >
+        {pendingStatusChange ? resolveCloseModalBody(pendingStatusChange.next) : null}
+      </Modal>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}

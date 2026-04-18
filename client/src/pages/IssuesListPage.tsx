@@ -11,7 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaFileCsv } from "react-icons/fa6";
 import { VscJson } from "react-icons/vsc";
 import type { To } from "react-router-dom";
@@ -28,6 +28,7 @@ import { IssueGroupedList } from "../components/issues/IssueGroupedList";
 import { IssueDetailModal } from "../components/IssueDetailModal";
 import { NewIssueModal } from "../components/NewIssueModal";
 import { issuesViewTransition, issuesViewVariants, viewTogglePillTransition } from "../lib/motionPresets";
+import { useInfiniteScrollSentinel } from "../hooks/useInfiniteScrollSentinel";
 
 function StatCard({
   label,
@@ -90,15 +91,28 @@ export function IssuesListPage() {
   const statsLoading = useIssueStore((s) => s.statsLoading);
   const error = useIssueStore((s) => s.error);
   const loadIssues = useIssueStore((s) => s.loadIssues);
+  const loadMoreIssues = useIssueStore((s) => s.loadMoreIssues);
   const loadBoardIssues = useIssueStore((s) => s.loadBoardIssues);
   const loadStats = useIssueStore((s) => s.loadStats);
   const updateIssue = useIssueStore((s) => s.updateIssue);
   const setIssuesView = useIssueStore((s) => s.setIssuesView);
+  const loadingMore = useIssueStore((s) => s.loadingMore);
 
   const [qInput, setQInput] = useState(filters.q);
   const debouncedQ = useDebouncedValue(qInput, 320);
   const [view, setView] = useState<"list" | "board">("list");
   const [filtersModalOpen, setFiltersModalOpen] = useState(false);
+
+  const listScrollRef = useRef<HTMLDivElement>(null);
+  const hasMore = Boolean(list && list.page < list.totalPages);
+  const infiniteScrollEnabled = view === "list" && Boolean(list?.items.length);
+  const loadMoreSentinelRef = useInfiniteScrollSentinel(
+    listScrollRef,
+    () => void loadMoreIssues(),
+    infiniteScrollEnabled,
+    hasMore,
+    loading || loadingMore
+  );
 
   const activeFilterCount = useMemo(() => {
     let n = 0;
@@ -167,8 +181,8 @@ export function IssuesListPage() {
             transition={issuesViewTransition}
           >
             {view === "board"
-              ? "Drag from the grip to move cards between columns. Filters and search work like list view; we load up to 200 issues."
-              : "Browse by status in one scrolling list. Without a status filter, you'll see your 200 most recent updates. Search runs a moment after you stop typing."}
+              ? "Drag from the grip to move cards between columns. All issues matching your filters are loaded. Resolving or closing a card asks for confirmation."
+              : "Browse by status in grouped sections. Scroll down to load more; search waits until you pause typing."}
           </motion.p>
         </AnimatePresence>
       }
@@ -301,39 +315,21 @@ export function IssuesListPage() {
               ) : null}
 
               {list && list.items.length > 0 ? (
-                <div className="app-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+                <div
+                  ref={listScrollRef}
+                  className="app-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]"
+                >
                   <IssueGroupedList issues={list.items} issueTo={issueTo} />
-                </div>
-              ) : null}
-
-              {!loading && list && !filters.status && list.total > 200 ? (
-                <p className="shrink-0 text-xs text-muted">
-                  Showing the 200 most recently updated issues across all groups. Refine search or filter by status for paginated results.
-                </p>
-              ) : null}
-
-              {list && filters.status && list.totalPages > 1 ? (
-                <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 pt-2">
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    disabled={filters.page <= 1}
-                    onClick={() => setFilters({ page: filters.page - 1 })}
-                  >
-                    Previous
-                  </Button>
-                  <span className="px-2 text-sm text-muted">
-                    Page {list.page} of {list.totalPages}
-                    <span className="text-muted/70"> · {list.total} total</span>
-                  </span>
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    disabled={filters.page >= list.totalPages}
-                    onClick={() => setFilters({ page: filters.page + 1 })}
-                  >
-                    Next
-                  </Button>
+                  {hasMore ? <div ref={loadMoreSentinelRef} className="h-1 shrink-0" aria-hidden /> : null}
+                  {loadingMore ? (
+                    <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted">
+                      <Loader2 className="size-4 animate-spin text-accent" aria-hidden />
+                      Loading more…
+                    </div>
+                  ) : null}
+                  {!hasMore && list.total > 0 ? (
+                    <p className="py-3 text-center text-xs text-muted">You&apos;ve reached the end · {list.total} issue{list.total === 1 ? "" : "s"}</p>
+                  ) : null}
                 </div>
               ) : null}
             </motion.div>
@@ -375,11 +371,6 @@ export function IssuesListPage() {
                       }}
                     />
                   </div>
-                  {list.total > 200 ? (
-                    <p className="shrink-0 text-xs text-muted">
-                      Showing the first 200 issues for the board. Refine search or switch to list view for pagination.
-                    </p>
-                  ) : null}
                 </div>
               ) : null}
             </motion.div>

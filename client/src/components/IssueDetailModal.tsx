@@ -15,6 +15,11 @@ import { Button } from "./ui/Button";
 import { Field } from "./ui/Field";
 import { Select } from "./ui/Select";
 import type { IssuePriority, IssueSeverity, IssueStatus } from "../types/issue";
+import {
+  resolveCloseConfirmLabel,
+  resolveCloseModalBody,
+  resolveCloseModalTitle,
+} from "../lib/issueStatusConfirm";
 import { useIssueStore } from "../store/issueStore";
 
 interface Props {
@@ -124,14 +129,8 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const statusModalTitle =
-    pendingStatus === "resolved" ? "Mark as resolved?" : pendingStatus === "closed" ? "Close this issue?" : "Update status?";
-  const statusModalBody =
-    pendingStatus === "resolved"
-      ? "This sets the status to resolved. You can change it again anytime below."
-      : pendingStatus === "closed"
-        ? "Closed usually means no further work. You can reopen by changing status here or on the edit screen."
-        : "";
+  const statusModalTitle = pendingStatus ? resolveCloseModalTitle(pendingStatus) : "Update status?";
+  const statusModalBody = pendingStatus ? resolveCloseModalBody(pendingStatus) : "";
 
   return (
     <AnimatePresence>
@@ -293,7 +292,7 @@ export function IssueDetailModal({ open, issueId, onClose }: Props) {
                   setPendingStatus(null);
                 })
               }
-              confirmLabel={pendingStatus === "closed" ? "Close issue" : "Mark resolved"}
+              confirmLabel={pendingStatus ? resolveCloseConfirmLabel(pendingStatus) : "Confirm"}
               danger={pendingStatus === "closed"}
             >
               {statusModalBody}

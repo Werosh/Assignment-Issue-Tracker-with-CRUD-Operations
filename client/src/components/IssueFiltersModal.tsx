@@ -121,7 +121,7 @@ export function IssueFiltersModal({
                   <p className="mt-1.5 text-xs text-muted">Status filter is off in board view; use columns instead.</p>
                 ) : !status ? (
                   <p className="mt-1.5 text-xs text-muted">
-                    All statuses shown in separate groups (up to 200 issues). Choose a status to filter the API and enable page navigation.
+                    All statuses appear in separate groups. Scroll the list to load more issues; pick a status to filter one column only.
                   </p>
                 ) : null}
               </Field>

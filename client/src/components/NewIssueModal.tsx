@@ -2,6 +2,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { IssueForm } from "./IssueForm";
+import { Modal } from "./Modal";
+import {
+  needsResolveCloseConfirmation,
+  resolveCloseConfirmLabel,
+  resolveCloseModalBody,
+  resolveCloseModalTitle,
+} from "../lib/issueStatusConfirm";
 import type { IssuePriority, IssueSeverity, IssueStatus } from "../types/issue";
 import {
   modalBackdropTransition,
@@ -16,9 +23,18 @@ interface Props {
   onClose: () => void;
 }
 
+type CreateFormValues = {
+  title: string;
+  description: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  severity: IssueSeverity;
+};
+
 export function NewIssueModal({ open, onClose }: Props) {
   const createIssue = useIssueStore((s) => s.createIssue);
   const [error, setError] = useState<string | null>(null);
+  const [pendingCreate, setPendingCreate] = useState<CreateFormValues | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -92,6 +108,37 @@ export function NewIssueModal({ open, onClose }: Props) {
               </div>
             ) : null}
 
+            <Modal
+              open={pendingCreate != null}
+              title={pendingCreate ? resolveCloseModalTitle(pendingCreate.status) : ""}
+              overlayClassName="z-[60]"
+              danger={pendingCreate?.status === "closed"}
+              confirmLabel={pendingCreate ? resolveCloseConfirmLabel(pendingCreate.status) : "Confirm"}
+              onClose={() => setPendingCreate(null)}
+              onConfirm={() => {
+                const v = pendingCreate;
+                if (!v) return;
+                setPendingCreate(null);
+                void (async () => {
+                  setError(null);
+                  try {
+                    await createIssue({
+                      title: v.title,
+                      description: v.description,
+                      status: v.status,
+                      priority: v.priority,
+                      severity: v.severity,
+                    });
+                    onClose();
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : "Could not create issue.");
+                  }
+                })();
+              }}
+            >
+              {pendingCreate ? resolveCloseModalBody(pendingCreate.status) : null}
+            </Modal>
+
             <div className="mt-5">
               <IssueForm
                 embedInModal
@@ -99,14 +146,19 @@ export function NewIssueModal({ open, onClose }: Props) {
                 onCancel={onClose}
                 onSubmit={async (values) => {
                   setError(null);
+                  const payload: CreateFormValues = {
+                    title: values.title,
+                    description: values.description,
+                    status: values.status as IssueStatus,
+                    priority: values.priority as IssuePriority,
+                    severity: values.severity as IssueSeverity,
+                  };
+                  if (needsResolveCloseConfirmation(payload.status, undefined)) {
+                    setPendingCreate(payload);
+                    return;
+                  }
                   try {
-                    await createIssue({
-                      title: values.title,
-                      description: values.description,
-                      status: values.status as IssueStatus,
-                      priority: values.priority as IssuePriority,
-                      severity: values.severity as IssueSeverity,
-                    });
+                    await createIssue(payload);
                     onClose();
                   } catch (e) {
                     setError(e instanceof Error ? e.message : "Could not create issue.");
