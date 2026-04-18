@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { HiOutlineLockClosed, HiOutlineMail, HiOutlineUser } from "react-icons/hi";
+import {
+  HiOutlineLockClosed,
+  HiOutlineMail,
+  HiOutlineUser,
+} from "react-icons/hi";
 import { Link, useNavigate } from "react-router-dom";
 import { Page } from "../components/Page";
 import { Button } from "../components/ui/Button";
@@ -23,7 +27,10 @@ export function RegisterPage() {
     >
       <Card className="p-6 sm:p-8">
         {error ? (
-          <div className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm text-red-100" role="alert">
+          <div
+            className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm text-red-100"
+            role="alert"
+          >
             {error}
           </div>
         ) : null}
@@ -54,16 +61,29 @@ export function RegisterPage() {
             <Input name="email" type="email" required autoComplete="email" />
           </Field>
           <Field label="Password" icon={HiOutlineLockClosed}>
-            <Input name="password" type="password" required autoComplete="new-password" minLength={8} />
+            <Input
+              name="password"
+              type="password"
+              required
+              autoComplete="new-password"
+              minLength={8}
+            />
           </Field>
           <div className="pt-2">
-            <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+            <Button
+              type="submit"
+              disabled={pending}
+              className="w-full sm:w-auto"
+            >
               {pending ? "Creating…" : "Create account"}
             </Button>
           </div>
-          <p className="!mt-6 text-center text-sm text-muted sm:text-left">
+          <p className="mt-6! text-center text-sm text-muted sm:text-left">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-accent no-underline hover:underline">
+            <Link
+              to="/login"
+              className="font-medium text-accent no-underline hover:underline"
+            >
               Sign in
             </Link>
           </p>

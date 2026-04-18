@@ -18,10 +18,17 @@ export function LoginPage() {
   const [pending, setPending] = useState(false);
 
   return (
-    <Page title="Sign in" subtitle="Welcome back. Use your email and password to continue." className="max-w-lg">
+    <Page
+      title="Sign in"
+      subtitle="Welcome back. Use your email and password to continue."
+      className="max-w-lg"
+    >
       <Card className="p-6 sm:p-8">
         {error ? (
-          <div className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm text-red-100" role="alert">
+          <div
+            className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm text-red-100"
+            role="alert"
+          >
             {error}
           </div>
         ) : null}
@@ -45,19 +52,38 @@ export function LoginPage() {
           className="space-y-1"
         >
           <Field label="Email" icon={HiOutlineMail}>
-            <Input name="email" type="email" required autoComplete="email" onFocus={clearError} />
+            <Input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              onFocus={clearError}
+            />
           </Field>
           <Field label="Password" icon={HiOutlineLockClosed}>
-            <Input name="password" type="password" required autoComplete="current-password" minLength={8} />
+            <Input
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              minLength={8}
+            />
           </Field>
           <div className="pt-2">
-            <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+            <Button
+              type="submit"
+              disabled={pending}
+              className="w-full sm:w-auto"
+            >
               {pending ? "Signing in…" : "Sign in"}
             </Button>
           </div>
-          <p className="!mt-6 text-center text-sm text-muted sm:text-left">
+          <p className="mt-6! text-center text-sm text-muted sm:text-left">
             No account?{" "}
-            <Link to="/register" className="font-medium text-accent no-underline hover:underline">
+            <Link
+              to="/register"
+              className="font-medium text-accent no-underline hover:underline"
+            >
               Create one
             </Link>
           </p>
