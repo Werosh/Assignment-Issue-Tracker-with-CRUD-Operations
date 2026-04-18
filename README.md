@@ -1,130 +1,90 @@
 # Issue Tracker
 
-Associate frontend engineer assignment. React + TypeScript client (Vite, Zustand, React Router, Tailwind, Framer Motion, dnd-kit), Express + MongoDB API. JWT auth with bcrypt, per-user issues, full CRUD, list grouped by status with infinite scroll, board with drag-and-drop between columns, debounced search and filters, live status counts, CSV/JSON export, and a confirm step when you mark something resolved or closed.
+I built an issue tracker using a React single page application and a REST API backed by MongoDB so authentication and data are fully integrated rather than mocked. I concentrated on the frontend: routing, client state, list and board views, search and filters, exports, and a production deployment on Netlify.
 
-MongoDB is wired for a normal Atlas-style `mongodb+srv` connection string.
+**Live demo:** [https://issuetrackerbywk.netlify.app/](https://issuetrackerbywk.netlify.app/)
 
-## What you need
+The client stack is React and TypeScript with Vite, Tailwind CSS, Zustand, React Router, Framer Motion, and dnd-kit for the board. The API uses Express, Mongoose, and JWT based authentication. Implementation details for the backend are under `server/`; the emphasis of this submission is the user interface.
 
-Node 20+ and a MongoDB instance (Atlas free tier is fine). Create a database user and allow your IP in Network Access before you connect.
+## For reviewers
 
-## Install
+The live application is the fastest way to evaluate the work. After registering and signing in, please exercise the list view (grouping by status and infinite scrolling), the board view (dragging cards between columns), search and filters, CSV and JSON export, and transitions to Resolved or Closed to observe the confirmation flow.
 
-From the repo root, workspaces pull in both apps:
+Frontend code is primarily located in `client/src/`, including pages, components, Zustand stores, and typed API helpers under `api/`. Global styles are in `client/src/styles/global.css`, with Tailwind used for layout and components.
+
+To run the project locally, install Node.js 20 or newer, provision MongoDB (I used MongoDB Atlas during development), and configure `server/.env` from `server/.env.example`. From the repository root, `npm run dev` starts the API and Vite. The application is served at `http://localhost:5173`, with Vite proxying `/api` to the backend for same origin requests during development.
+
+## Frontend scope
+
+Authentication includes registration and login with JWT storage in `localStorage`, protected routes, and sign out. Issues support full CRUD through a detail modal and a dedicated edit view.
+
+The list view groups issues by status with infinite scrolling. Search is debounced to limit API traffic. Filters cover status, priority, and severity. The header displays live status counts from the server.
+
+The board view supports drag and drop between columns. Moving an issue to Resolved or Closed triggers a confirmation step, consistent with the modal and edit flows.
+
+Exports respect the active search and filters. Framer Motion is used where it clarifies transitions. Layout and components are kept consistent across views.
+
+The backend handles persistence and authorization with Helmet, CORS restricted to `CLIENT_ORIGIN`, bcrypt for passwords, and per user issue ownership.
+
+## Prerequisites
+
+Node.js 20 or newer, and a MongoDB instance. For Atlas, create a database user, allow your IP under Network Access for local development, and obtain a `mongodb+srv` connection string. URL encode special characters in the password when required.
+
+## Running locally
+
+From the repository root:
 
 ```bash
 npm install
 ```
 
-Exact versions live in `client/package.json` and `server/package.json`. Client highlights: React, Vite, TypeScript, Zustand, Tailwind, Framer Motion, dnd-kit. Server: Express, Mongoose, Zod, jose for JWT, bcryptjs, Helmet, CORS.
+Copy `server/.env.example` to `server/.env` and provide values for each variable.
 
-## MongoDB Atlas
-
-Spin up a cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Add a user under Database Access, then under Network Access point it at your dev machine (tightening `0.0.0.0/0` is your call for local hacks only). Connect → Drivers → copy the `mongodb+srv://` URI, plug in user, password, and database name. If the password has special characters, URL-encode them.
-
-## Environment
-
-Copy `server/.env.example` to `server/.env` and fill in the values.
-
-`MONGODB_URI` is your connection string; `mongodb+srv` already implies TLS.
-
-`JWT_SECRET` should be a long random string anywhere the app is shared or deployed. Anyone with it can forge tokens.
-
-`CLIENT_ORIGIN` is the browser origin allowed for CORS. For local dev the example file uses `http://localhost:5173`; change it to your real frontend URL when you deploy.
-
-`PORT` is where Express listens (defaults to 5000 if you omit it).
-
-Do not commit real `.env` files or paste secrets into the repo. Rotate anything that leaks.
-
-## Security (quick tour)
-
-Passwords are hashed with bcrypt on register; the API never stores plain text. Requests that touch issues send a Bearer JWT; the server verifies it with `JWT_SECRET` only on the server. Helmet adds sensible headers, CORS is locked to `CLIENT_ORIGIN`, and JSON bodies are capped. Each issue belongs to `createdBy`, so users only see their own rows.
-
-The SPA keeps the token in `localStorage` to keep the stack simple. Use HTTPS in production; locking down token theft for real products usually means shorter-lived tokens, refresh, or httpOnly cookies out of scope here but worth knowing.
-
-## Run locally
+`MONGODB_URI` is the Atlas connection string. `JWT_SECRET` must be a long random string of at least sixteen characters. Do not commit production secrets. For local development, `CLIENT_ORIGIN` may remain `http://localhost:5173` as in the example. `PORT` is optional and defaults to 5000 for the API.
 
 ```bash
 npm run dev
 ```
 
-That runs Express (API on port 5000 by default) and Vite together. Open the app at `http://localhost:5173`. Vite proxies `/api` to the backend so the browser stays same-origin for API calls during dev.
+The API listens on port 5000 by default. The Vite development server proxies `/api` to that process.
 
-## Using the app
-
-Register, then log in. Everything under Issues is per account.
-
-Create issues from the main screen (title, description, status, priority, severity). Open one from the list or board to see the detail modal; use Edit for the full-page form. List view groups cards by status and loads more as you scroll. Board view loads all matching issues for the current filters and lets you drag cards between columns dropping onto Resolved or Closed opens a confirm dialog, same as changing those statuses in the modal or on the edit page.
-
-Search debounces so typing does not spam the API. Filters (status, priority, severity) live behind the filter button. Status counts at the bottom of the header update from `/api/issues/stats`. Export CSV or JSON uses whatever search and filters are active. Sign out is in the header.
-
-## Production
+## Production build on a single host
 
 ```bash
 npm run build
 npm run start
 ```
 
-`npm run build` compiles the server TypeScript and builds the client bundle into `client/dist`. `npm run start` runs the compiled API only you still need to serve `client/dist` as static files (nginx, S3+CloudFront, etc.) and reverse-proxy `/api` to Node. Set the same env vars on the host and keep HTTPS at the edge.
+This compiles the server and builds the client to `client/dist`. `npm run start` runs the API only; a single host deployment would also serve `client/dist` as static assets and route `/api` to Node, with HTTPS terminated at the edge.
 
-## Deployment (Netlify + Render)
+## Deployment (Netlify and Render)
 
-The client uses relative `/api/...` URLs. In production you can host the **React app on Netlify** and the **Express API on Render**, with Netlify proxying `/api/*` to Render (same pattern as the Vite dev proxy).
+The client uses relative `/api` URLs only. The static build is hosted on Netlify. `netlify.toml` forwards `/api` requests to the Render hosted API, analogous to the Vite proxy in development.
 
-**Live app (Netlify):** [https://issuetrackerbywk.netlify.app/](https://issuetrackerbywk.netlify.app/)
+**Production frontend URL:** [https://issuetrackerbywk.netlify.app/](https://issuetrackerbywk.netlify.app/)
 
-### 1. Deploy the API on Render
+**Render (API):** Create a Web Service from the repository root. Build command: `npm install && npm run build -w server`. Start command: `npm run start -w server`. Set `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN` to `https://issuetrackerbywk.netlify.app` (origin only, no path or trailing slash). Render supplies `PORT`.
 
-1. In [Render](https://render.com), create a **Web Service** from this repository.
-2. Use the **repo root** (default) so npm workspaces resolve correctly.
-3. **Build command:** `npm install && npm run build -w server`
-4. **Start command:** `npm run start -w server`
-5. Under **Environment**, set:
-   - `MONGODB_URI` - your Atlas `mongodb+srv` URI (same as local).
-   - `JWT_SECRET` - a long random string (the server requires at least 16 characters).
-   - `CLIENT_ORIGIN` - the exact browser origin of your Netlify site. For this deployment use `https://issuetrackerbywk.netlify.app` (no path, no trailing slash). If you add a custom domain later, set this to that origin instead (e.g. `https://issues.example.com`).
-6. Render injects `PORT`; you do not need to set it unless you have a special case.
-7. Deploy and note the public URL (for example `https://assignment-issue-tracker-with-crud.onrender.com`).
+**Netlify (client):** Build command `npm install && npm run build -w client`, publish directory `client/dist`, as defined in `netlify.toml`. Configure the `/api` redirect to your Render service URL, for example `https://your-service.onrender.com/api/:splat`. No `VITE_` public API URL is required because requests remain relative.
 
-### 2. Point Netlify at the API
+Recommended order: deploy the API on Render, set `CLIENT_ORIGIN` to the Netlify origin, align `netlify.toml` with the Render base URL, then deploy the Netlify site. Update both if either public URL changes.
 
-The root [`netlify.toml`](netlify.toml) defines the static build and a rewrite so `/api/*` on the Netlify origin is forwarded to your Render service.
+## Security
 
-1. Edit the `[[redirects]]` block for `/api/*` and set `to` to your Render base URL plus `/api/:splat`, for example:
+Passwords are hashed. Protected routes validate the JWT. CORS is limited to the configured `CLIENT_ORIGIN`. Storing the token in `localStorage` is a deliberate simplification for this project; a production system would typically evaluate httpOnly cookies, refresh tokens, and stricter session handling.
 
-   `https://YOUR-SERVICE.onrender.com/api/:splat`
+## Repository layout
 
-2. Commit that change (or override in the Netlify UI under **Redirects** if you prefer not to commit URLs).
+`client/` contains the React application: pages, shared UI, stores such as `issueStore` and `authStore`, and API helpers. `server/` contains the Express application: routes, Mongoose models for users and issues, authentication middleware, and controllers.
 
-### 3. Deploy the frontend on Netlify
+## HTTP API (issue routes require Bearer token)
 
-1. In [Netlify](https://www.netlify.com), add a site from the same repo (or import the repo if you have not already).
-2. Build settings are taken from `netlify.toml`:
-   - **Build command:** `npm install && npm run build -w client`
-   - **Publish directory:** `client/dist`
-3. No `VITE_*` API base URL is required; the app keeps calling `/api` on the Netlify origin and Netlify proxies to Render.
-4. Set **`CLIENT_ORIGIN` on Render** to `https://issuetrackerbywk.netlify.app` and redeploy the Render service so CORS allows the browser.
+**Auth:** `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
 
-**Order that avoids broken CORS:** deploy Render → set `CLIENT_ORIGIN` to `https://issuetrackerbywk.netlify.app` → update `netlify.toml` with the Render URL → deploy Netlify. If you change either public URL later, update `CLIENT_ORIGIN` and/or the Netlify redirect target accordingly.
+**Issues:** listing with query parameters for pagination, search, and filters; `GET /api/issues/stats`; export endpoints; standard CRUD at `/api/issues` and `/api/issues/:id`. Issue routes expect `Authorization: Bearer <token>` from login or registration.
 
-## Scripts recap
+## npm scripts
 
-`npm run dev` - both processes for day-to-day coding.
+`npm run dev` runs the API and Vite together. `npm run build` builds the server and client. `npm run start` runs the compiled API after a build.
 
-`npm run build` - production artifacts for client + server.
-
-`npm run start` - API from compiled `server` output after a build.
-
-## Repo layout
-
-`client/` holds the React app: pages, reusable UI, Zustand stores (`issueStore`, `authStore`), and the fetch helpers under `src/api/`.
-
-`server/` is Express: routes, Mongoose models (`User`, `Issue`), auth middleware, and the issue/export controllers.
-
-## HTTP API (Bearer auth except register/login)
-
-Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`.
-
-Issues: `GET /api/issues` with optional query params `page`, `limit`, `q` (title/description substring), `status`, `priority`, `severity`. `GET /api/issues/stats` returns counts per status. `GET /api/issues/export?format=json` or `format=csv` streams a download (respects the same filter params as list). `GET /api/issues/:id`, `PATCH /api/issues/:id`, `DELETE /api/issues/:id`, `POST /api/issues` for the usual CRUD.
-
-All issue routes expect `Authorization: Bearer <token>` from login or register.
+Thank you for reviewing this submission.
