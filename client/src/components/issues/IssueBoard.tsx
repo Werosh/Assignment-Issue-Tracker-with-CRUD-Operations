@@ -16,6 +16,7 @@ import type { CSSProperties, MutableRefObject } from "react";
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Issue, IssueStatus } from "../../types/issue";
+import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 import { PriorityBadge } from "../IssueBadges";
 import { Card } from "../ui/Card";
 import { cn } from "../../lib/cn";
@@ -198,6 +199,9 @@ export function IssueBoard({ issues, onStatusChange }: Props) {
     };
     for (const i of issues) {
       if (map[i.status]) map[i.status].push(i);
+    }
+    for (const s of COLUMNS) {
+      map[s.id].sort(compareIssuesByPrioritySeverityUpdated);
     }
     return map;
   }, [issues]);

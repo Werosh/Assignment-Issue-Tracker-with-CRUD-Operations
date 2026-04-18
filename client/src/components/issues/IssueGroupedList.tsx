@@ -8,13 +8,9 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type {
-  Issue,
-  IssuePriority,
-  IssueSeverity,
-  IssueStatus,
-} from "../../types/issue";
+import type { Issue, IssuePriority, IssueStatus } from "../../types/issue";
 import { cn } from "../../lib/cn";
+import { compareIssuesByPrioritySeverityUpdated } from "../../lib/issueSort";
 
 const STATUS_ORDER: IssueStatus[] = [
   "open",
@@ -36,32 +32,6 @@ const PRIORITY_LABEL: Record<IssuePriority, string> = {
   high: "High",
   urgent: "Urgent",
 };
-
-/** Lower value = sort earlier (more urgent). */
-const PRIORITY_ORDER: Record<IssuePriority, number> = {
-  urgent: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-};
-
-/** Lower value = sort earlier (more severe). */
-const SEVERITY_ORDER: Record<IssueSeverity, number> = {
-  critical: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-};
-
-function sortGroupIssues(a: Issue, b: Issue) {
-  const p = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-  if (p !== 0) return p;
-  const s = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity];
-  if (s !== 0) return s;
-  const ta = a.updatedAt ? Date.parse(a.updatedAt) : 0;
-  const tb = b.updatedAt ? Date.parse(b.updatedAt) : 0;
-  return tb - ta;
-}
 
 function formatShortDate(iso?: string) {
   if (!iso) return "—";
@@ -131,7 +101,7 @@ export function IssueGroupedList({ issues }: Props) {
       if (map[i.status]) map[i.status].push(i);
     }
     for (const s of STATUS_ORDER) {
-      map[s].sort(sortGroupIssues);
+      map[s].sort(compareIssuesByPrioritySeverityUpdated);
     }
     return map;
   }, [issues]);
